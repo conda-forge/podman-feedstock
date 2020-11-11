@@ -18,7 +18,7 @@ source:
     - 0003-Allow-relative-paths-for-system-config-files.patch
 
 build:
-  number: 0
+  number: 1
   skip: True  # [not linux]
 
 requirements:
