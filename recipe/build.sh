@@ -2,10 +2,10 @@
 
 set -x
 
-cp ./src/LICENSE ./
+cp ./podman/LICENSE ./
 module_path="${GOPATH:-"$( go env GOPATH )"}"/src/github.com/containers/podman
 mkdir -p "$( dirname "${module_path}" )"
-mv ./src "${module_path}"
+mv ./podman "${module_path}"
 
 # We use HAVE_SETNS is a CentOS 6 compat patch.
 if \

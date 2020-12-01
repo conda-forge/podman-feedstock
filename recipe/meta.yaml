@@ -7,7 +7,7 @@ package:
 source:
   url: https://github.com/containers/podman/archive/v{{ version }}.tar.gz
   sha256: ec5473e51fa28f29af323473fc484f742dc7df23d06d8ba9f217f13382893a71
-  folder: src
+  folder: podman
   patches:
     # NOTE: This adds the memfd_create syscall which is not available on CentOS 6's kernels.
     - 0001-Add-missing-defines-for-CentOS-6.patch
