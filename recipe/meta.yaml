@@ -7,7 +7,7 @@ package:
 source:
   url: https://github.com/containers/podman/archive/v{{ version }}.tar.gz
   sha256: bd86b181251e2308cb52f18410fb52d89df7f130cecf0298bbf9a848fe7daf60
-  folder: podman
+  folder: src/github.com/containers/podman
   patches:
     # NOTE: This adds the memfd_create syscall which is not available on CentOS 6's kernels.
     - 0001-Add-missing-defines-for-CentOS-6.patch
@@ -84,8 +84,8 @@ about:
   license: Apache-2.0
   license_family: Apache
   license_file:
-    - LICENSE
-    - thirdparty-licenses.txt
+    - src/github.com/containers/podman/LICENSE
+    - licenses.txt
   summary: 'Podman: A tool for managing OCI containers and pods.'
   description: >
     Podman (the POD MANager) is a tool for managing containers and images, volumes mounted into those containers, and pods made from groups of containers. Podman is based on libpod, a library for container lifecycle management that is also contained in this repository. The libpod library provides APIs for managing containers,

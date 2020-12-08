@@ -1,11 +1,7 @@
 #! /usr/bin/env bash
 
-set -x
-
-cp ./podman/LICENSE ./
-module_path="${GOPATH:-"$( go env GOPATH )"}"/src/github.com/containers/podman
-mkdir -p "$( dirname "${module_path}" )"
-mv ./podman "${module_path}"
+module='github.com/containers/podman'
+export GOPATH="$( pwd )"
 
 # We use HAVE_SETNS is a CentOS 6 compat patch.
 if \
@@ -15,7 +11,7 @@ then
   export CPPFLAGS="${CPPFLAGS} -DHAVE_SETNS"
 fi
 
-make -C "${module_path}" \
+make -C "src/${module}" \
   install install.completions \
   ETCDIR="${PREFIX}/etc" \
 
@@ -57,4 +53,4 @@ cat "${2}"
   rm -r "${acc_dir}" "${tmp_dir}"
 }
 
-gather_licenses ./thirdparty-licenses.txt 'github.com/containers/podman/cmd/podman'
+gather_licenses ./licenses.txt "${module}/cmd/podman"
