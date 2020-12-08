@@ -41,9 +41,8 @@ EOF
     go get -d "${module}"
     chmod -R +rw "$( go env GOPATH )"
     go-licenses csv "${module}" | sort >> "${output}"
-    go-licenses save "${module}" --save_path="${tmp_dir}"
+    go-licenses save "${module}" --force --save_path="${tmp_dir}"
     cp -r "${tmp_dir}"/* "${acc_dir}"/
-    rm -r "${tmp_dir}"
   done
   # shellcheck disable=SC2016  # Not expanding $ in single quotes intentional.
   find "${acc_dir}" -type f | sort | xargs -L1 sh -c '
@@ -55,7 +54,7 @@ ${2#${1%/}/}
 EOF
 cat "${2}"
 ' -- "${acc_dir}" >> "${output}"
-  rm -r "${acc_dir}"
+  rm -r "${acc_dir}" "${tmp_dir}"
 }
 
 gather_licenses ./thirdparty-licenses.txt 'github.com/containers/podman/cmd/podman'
