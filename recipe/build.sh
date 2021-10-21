@@ -53,4 +53,4 @@ cat "${2}"
   rm -r "${acc_dir}" "${tmp_dir}"
 }
 
-gather_licenses ./licenses.txt "${module}/cmd/podman"
+# gather_licenses ./licenses.txt "${module}/cmd/podman"
