@@ -29,6 +29,7 @@ requirements:
     - pkg-config
     - make
     - {{ cdt('libselinux') }}
+    - tree
   host:
     - btrfs-progs
     - containers-common
