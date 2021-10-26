@@ -3,14 +3,6 @@
 module='github.com/containers/podman'
 export GOPATH="$( pwd )"
 
-# We use HAVE_SETNS is a CentOS 6 compat patch.
-if \
-  printf %s 'char setns (); int main () { setns (); return 0; }' \
-  | ${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -x c - -o /dev/null ;
-then
-  export CPPFLAGS="${CPPFLAGS} -DHAVE_SETNS"
-fi
-
 make -C "src/${module}" \
   install install.completions \
   ETCDIR="${PREFIX}/etc" \
