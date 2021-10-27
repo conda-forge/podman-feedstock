@@ -13,4 +13,4 @@ tree -d
 
 pwd
 
-go-licenses save $GOPATH --save_path=./license-files
+go-licenses save ./src/github.com/containers/podman --save_path=./license-files  --logtostderr
