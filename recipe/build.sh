@@ -13,4 +13,4 @@ tree -d
 
 pwd
 
-go-licenses save "src/${module}" --save_path=./license-files
+go-licenses save $GOPATH --save_path=./license-files
