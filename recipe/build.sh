@@ -11,4 +11,6 @@ make -C "src/${module}" \
 
 tree -d
 
-go-licenses save "${SRC_DIR}/src/github.com/containers/podman/cmd" --save_path=./license-files
+pwd
+
+go-licenses save "src/${module}" --save_path=./license-files
