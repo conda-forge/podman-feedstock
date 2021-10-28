@@ -9,8 +9,4 @@ make -C "src/${module}" \
   ETCDIR="${PREFIX}/etc" \
 
 
-tree -d
-
-pwd
-
-go-licenses save ./src/github.com/containers/podman --save_path=./license-files  --logtostderr
+go-licenses save ./src/github.com/containers/podman --save_path=./license-files
