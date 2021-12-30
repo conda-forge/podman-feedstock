@@ -1,4 +1,4 @@
-{% set version = "3.4.1" %}
+{% set version = "3.4.4" %}
 
 package:
   name: podman
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://github.com/containers/podman/archive/v{{ version }}.tar.gz
-  sha256: 3fa70c499a4733524354518e839eefa3f14b630a519393418d082880535c1e33
+  sha256: 718c9e1e734c2d374fcf3c59e4cc7c1755acb954fc7565093e1d636c04b72e3a
   folder: src/github.com/containers/podman
   patches:
     # NOTE: This adds the memfd_create syscall which is not available on CentOS 6's kernels.
