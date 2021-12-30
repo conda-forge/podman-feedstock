@@ -66,7 +66,7 @@ test:
       # We use mktemp instead of a path in the test work directory to avoid
       # "Error: the specified runroot is longer than 50 characters".
       tmp="$( mktemp -d )"
-      trap 'rm -r "${tmp}" ; trap - EXIT ; exit' EXIT INT HUP
+      trap 'cat "${tmp}/podman-info.txt" || true; rm -r "${tmp}" ; trap - EXIT ; exit' EXIT INT HUP
 
       podman --log-level=debug --storage-driver=vfs \
         --root="${tmp}/root" --runroot="${tmp}/runroot" \
