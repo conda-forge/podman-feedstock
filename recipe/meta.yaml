@@ -40,9 +40,11 @@ requirements:
     - libgpg-error
     - libseccomp
   run:
+    # TODO: podman 3.4.4 requires conmon >=2.0.30 which isn't yet available
     - conmon
     - containers-common
     - cni-plugins
+    # TODO: switch to crun?
     - runc
     - slirp4netns
 
@@ -65,18 +67,17 @@ test:
       # "Error: the specified runroot is longer than 50 characters".
       tmp="$( mktemp -d )"
       trap 'rm -r "${tmp}" ; trap - EXIT ; exit' EXIT INT HUP
-      conf="$(
-        {
-          podman --log-level=debug --storage-driver=vfs \
-          --root="${tmp}/root" --runroot="${tmp}/runroot" \
-          info 2>&1 \
-          || true
-        } | grep 'Merged system config' | tr ' ' '\n'
-      )"
-      printf %s "${conf}" | grep -qF "${PREFIX}/share/containers/containers.conf"
-      printf %s "${conf}" | grep -qF "SeccompProfile:${PREFIX}/share/containers/seccomp.json"
-      printf %s "${conf}" | grep -qF "HooksDir:[${PREFIX}/share/containers/oci/hooks.d]"
-      printf %s "${conf}" | grep -qF "SignaturePolicyPath:${PREFIX}/etc/containers/policy.json"
+
+      podman --log-level=debug --storage-driver=vfs \
+        --root="${tmp}/root" --runroot="${tmp}/runroot" \
+        info > "${tmp}/podman-info.txt" 2>&1
+
+      grep -F "${PREFIX}/share/containers/containers.conf" "${tmp}/podman-info.txt"
+      grep -F "seccompProfilePath: ${PREFIX}/share/containers/seccomp.json" "${tmp}/podman-info.txt"
+
+      # Not in output:
+      # grep -F "HooksDir:[${PREFIX}/share/containers/oci/hooks.d]" "${tmp}/podman-info.txt"
+      # grep -F "SignaturePolicyPath:${PREFIX}/etc/containers/policy.json" "${tmp}/podman-info.txt"
 
 about:
   home: https://podman.io/
