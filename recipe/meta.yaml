@@ -40,8 +40,7 @@ requirements:
     - libgpg-error
     - libseccomp
   run:
-    # TODO: podman 3.4.4 requires conmon >=2.0.30 which isn't yet available
-    - conmon
+    - conmon >=2.0.30
     - containers-common
     - cni-plugins
     # TODO: switch to crun?
