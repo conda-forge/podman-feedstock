@@ -143,5 +143,6 @@ Feedstock Maintainers
 =====================
 
 * [@dhirschfeld](https://github.com/dhirschfeld/)
+* [@manics](https://github.com/manics/)
 * [@mbargull](https://github.com/mbargull/)
 
