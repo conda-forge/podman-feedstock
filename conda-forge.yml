@@ -2,3 +2,8 @@ conda_forge_output_validation: true
 
 os_version:
   linux_64: cos7
+
+azure:
+  # toggle for storing the conda build_artifacts directory (including the
+  # built packages) as an Azure pipeline artifact that can be downloaded
+  store_build_artifacts: true
