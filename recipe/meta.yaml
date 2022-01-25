@@ -1,4 +1,4 @@
-{% set version = "2.2.1" %}
+{% set version = "3.4.4" %}
 
 package:
   name: podman
@@ -6,11 +6,11 @@ package:
 
 source:
   url: https://github.com/containers/podman/archive/v{{ version }}.tar.gz
-  sha256: bd86b181251e2308cb52f18410fb52d89df7f130cecf0298bbf9a848fe7daf60
+  sha256: 718c9e1e734c2d374fcf3c59e4cc7c1755acb954fc7565093e1d636c04b72e3a
   folder: src/github.com/containers/podman
   patches:
     # NOTE: This adds the memfd_create syscall which is not available on CentOS 6's kernels.
-    - 0001-Add-missing-defines-for-CentOS-6.patch
+    # - 0001-Add-missing-defines-for-CentOS-6.patch
     # NOTE: If the patch for relative paths stops working, see the buildah
     #       feedstock for an alternative with an hardcoded prefix path.
     - 0002-Allow-relative-paths-for-system-config-files.patch
@@ -23,7 +23,8 @@ requirements:
   build:
     - {{ compiler('cgo') }}
     - {{ compiler('c') }}
-    - go-licenses
+    - sysroot_linux-64 2.17  # [linux64]
+    - go-licenses >=0.0.44
     - go-md2man
     - pkg-config
     - make
@@ -39,9 +40,10 @@ requirements:
     - libgpg-error
     - libseccomp
   run:
-    - conmon
+    - conmon >=2.0.30
     - containers-common
     - cni-plugins
+    # TODO: switch to crun?
     - runc
     - slirp4netns
 
@@ -63,19 +65,18 @@ test:
       # We use mktemp instead of a path in the test work directory to avoid
       # "Error: the specified runroot is longer than 50 characters".
       tmp="$( mktemp -d )"
-      trap 'rm -r "${tmp}" ; trap - EXIT ; exit' EXIT INT HUP
-      conf="$(
-        {
-          podman --log-level=debug --storage-driver=vfs \
-          --root="${tmp}/root" --runroot="${tmp}/runroot" \
-          info 2>&1 \
-          || true
-        } | grep 'Merged system config' | tr ' ' '\n'
-      )"
-      printf %s "${conf}" | grep -qF "${PREFIX}/share/containers/containers.conf"
-      printf %s "${conf}" | grep -qF "SeccompProfile:${PREFIX}/share/containers/seccomp.json"
-      printf %s "${conf}" | grep -qF "HooksDir:[${PREFIX}/share/containers/oci/hooks.d]"
-      printf %s "${conf}" | grep -qF "SignaturePolicyPath:${PREFIX}/etc/containers/policy.json"
+      trap 'cat "${tmp}/podman-info.txt" || true; rm -r "${tmp}" ; trap - EXIT ; exit' EXIT INT HUP
+
+      podman --log-level=debug --storage-driver=vfs \
+        --root="${tmp}/root" --runroot="${tmp}/runroot" \
+        info > "${tmp}/podman-info.txt" 2>&1
+
+      grep -F "${PREFIX}/share/containers/containers.conf" "${tmp}/podman-info.txt"
+      grep -F "seccompProfilePath: ${PREFIX}/share/containers/seccomp.json" "${tmp}/podman-info.txt"
+
+      # Not in output:
+      # grep -F "HooksDir:[${PREFIX}/share/containers/oci/hooks.d]" "${tmp}/podman-info.txt"
+      # grep -F "SignaturePolicyPath:${PREFIX}/etc/containers/policy.json" "${tmp}/podman-info.txt"
 
 about:
   home: https://podman.io/
@@ -85,7 +86,7 @@ about:
   license_family: Apache
   license_file:
     - src/github.com/containers/podman/LICENSE
-    - licenses.txt
+    - license-files/
   summary: 'Podman: A tool for managing OCI containers and pods.'
   description: >
     Podman (the POD MANager) is a tool for managing containers and images, volumes mounted into those containers, and pods made from groups of containers. Podman is based on libpod, a library for container lifecycle management that is also contained in this repository. The libpod library provides APIs for managing containers,
@@ -94,3 +95,5 @@ about:
 extra:
   recipe-maintainers:
     - mbargull
+    - dhirschfeld
+    - manics
