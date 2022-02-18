@@ -21,8 +21,13 @@ build:
 
 requirements:
   build:
-    - {{ compiler('cgo') }}
-    - {{ compiler('c') }}
+    # - {{ compiler('cgo') }} 1.17
+    # - {{ compiler('c') }}
+    # The above fails (2022-02-18):
+    # - package go-cgo_linux-64-1.17.6-hb09e268_1 requires _go_select ==2.3.0 cgo, but none of the providers can be installed
+    # Instead specify the underlying packages since this isn't cross-platform
+    - go >=1.17
+    - go-cgo >=1.17
     - sysroot_linux-64 2.17  # [linux64]
     - go-licenses >=0.0.44
     - go-md2man
