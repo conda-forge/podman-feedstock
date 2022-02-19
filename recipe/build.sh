@@ -2,11 +2,12 @@
 
 module='github.com/containers/podman'
 export GOPATH="$( pwd )"
+LICENSE_DIR="$( pwd )/license-files"
 
-
+make -C "src/${module}" all
 make -C "src/${module}" \
   install install.completions \
-  ETCDIR="${PREFIX}/etc" \
+  ETCDIR="${PREFIX}/etc"
 
-
-go-licenses save ./src/github.com/containers/podman/cmd/podman --save_path=./license-files
+cd "./src/${module}"
+go-licenses save ./cmd/podman/ --save_path="$LICENSE_DIR"
