@@ -12,4 +12,7 @@ azure:
   # Docker can't run podman (required for tests) without additional privileges
   settings_linux:
     variables:
-      CONDA_FORGE_DOCKER_RUN_ARGS: "--cap-add SYS_ADMIN"
+      CONDA_FORGE_DOCKER_RUN_ARGS: --cap-add SYS_ADMIN
+github:
+  branch_name: main
+  tooling_branch_name: main
