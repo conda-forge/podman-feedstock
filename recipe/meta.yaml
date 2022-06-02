@@ -13,10 +13,10 @@ source:
     # - 0001-Add-missing-defines-for-CentOS-6.patch
     # NOTE: If the patch for relative paths stops working, see the buildah
     #       feedstock for an alternative with an hardcoded prefix path.
-    - 0002-Allow-relative-paths-for-system-config-files.patch
+    - 0002-relative-paths-for-system-config-and-binaries.patch
 
 build:
-  number: 0
+  number: 1
   skip: true  # [not linux]
 
 requirements:
