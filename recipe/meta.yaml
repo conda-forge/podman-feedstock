@@ -1,4 +1,4 @@
-{% set version = "4.1.1" %}
+{% set version = "4.2.0" %}
 
 package:
   name: podman
@@ -6,11 +6,11 @@ package:
 
 source:
   url: https://github.com/containers/podman/archive/v{{ version }}.tar.gz
-  sha256: 27bf32e9b1afee94cb08ebd59389104788d687f402a541f3631f94c7916b10a5
+  sha256: 15f8bc59025ccd97dc9212a552e7274dfb79e1633b02d6a2a7f63d747eadb2f4
   folder: src/github.com/containers/podman
   patches:
     # NOTE: This adds the memfd_create syscall which is not available on CentOS 6's kernels.
-    # - 0001-Add-missing-defines-for-CentOS-6.patch
+    - 0001-Add-missing-defines-for-CentOS-6.patch
     # NOTE: If the patch for relative paths stops working, see the buildah
     #       feedstock for an alternative with an hardcoded prefix path.
     - 0002-relative-paths-for-system-config-and-binaries.patch

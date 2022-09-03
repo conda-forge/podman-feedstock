@@ -1,8 +1,8 @@
 diff --git a/vendor/github.com/containers/common/pkg/config/config.go b/vendor/github.com/containers/common/pkg/config/config.go
-index a86eca88e..5bcc8e363 100644
+index 3d90268cd..6c9d7df5e 100644
 --- a/vendor/github.com/containers/common/pkg/config/config.go
 +++ b/vendor/github.com/containers/common/pkg/config/config.go
-@@ -20,6 +20,42 @@ import (
+@@ -21,6 +21,42 @@ import (
  	"github.com/sirupsen/logrus"
  )
  
@@ -45,7 +45,7 @@ index a86eca88e..5bcc8e363 100644
  const (
  	// _configPath is the path to the containers/containers.conf
  	// inside a given config directory.
-@@ -709,8 +745,8 @@ func systemConfigs() ([]string, error) {
+@@ -719,8 +755,8 @@ func systemConfigs() ([]string, error) {
  		}
  		return append(configs, path), nil
  	}
@@ -56,32 +56,22 @@ index a86eca88e..5bcc8e363 100644
  	}
  	if _, err := os.Stat(OverrideContainersConfig); err == nil {
  		configs = append(configs, OverrideContainersConfig)
-@@ -1222,6 +1258,9 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error)
- 		dir_list = append([]string{dir}, dir_list...)
- 	}
- 
-+	relative_helper_bindir := PathRelativeToExe("/usr/libexec/podman")
-+	dir_list = append([]string{relative_helper_bindir}, dir_list...)
-+
- 	for _, path := range dir_list {
- 		fullpath := filepath.Join(path, name)
- 		if fi, err := os.Stat(fullpath); err == nil && fi.Mode().IsRegular() {
-@@ -1235,7 +1274,7 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error)
+@@ -1246,7 +1282,7 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error)
  	if len(c.Engine.HelperBinariesDir) == 0 {
- 		return "", errors.Errorf("could not find %q because there are no helper binary directories configured.  %s", name, configHint)
+ 		return "", fmt.Errorf("could not find %q because there are no helper binary directories configured.  %s", name, configHint)
  	}
--	return "", errors.Errorf("could not find %q in one of %v.  %s", name, c.Engine.HelperBinariesDir, configHint)
-+	return "", errors.Errorf("could not find %q in one of %v.  %s", name, dir_list, configHint)
+-	return "", fmt.Errorf("could not find %q in one of %v.  %s", name, c.Engine.HelperBinariesDir, configHint)
++	return "", fmt.Errorf("could not find %q in one of %v.  %s", name, dirList, configHint)
  }
  
  // ImageCopyTmpDir default directory to store temporary image files during copy
 diff --git a/vendor/github.com/containers/common/pkg/config/default.go b/vendor/github.com/containers/common/pkg/config/default.go
-index 8979a406b..a25c373f6 100644
+index 161a9c8d6..148951640 100644
 --- a/vendor/github.com/containers/common/pkg/config/default.go
 +++ b/vendor/github.com/containers/common/pkg/config/default.go
-@@ -137,9 +137,9 @@ const (
+@@ -140,9 +140,9 @@ const (
  	DefaultPidsLimit = 2048
- 	// DefaultPullPolicy pulls the image if it does not exist locally
+ 	// DefaultPullPolicy pulls the image if it does not exist locally.
  	DefaultPullPolicy = "missing"
 -	// DefaultSignaturePolicyPath is the default value for the
 +	// defaultSignaturePolicyPath  is the default value for the
@@ -91,7 +81,7 @@ index 8979a406b..a25c373f6 100644
  	// DefaultSubnet is the subnet that will be used for the default
  	// network.
  	DefaultSubnet = "10.88.0.0/16"
-@@ -165,7 +165,8 @@ func DefaultConfig() (*Config, error) {
+@@ -168,7 +168,8 @@ func DefaultConfig() (*Config, error) {
  		return nil, err
  	}
  
@@ -101,7 +91,7 @@ index 8979a406b..a25c373f6 100644
  	if unshare.IsRootless() {
  		configHome, err := homedir.GetConfigHome()
  		if err != nil {
-@@ -174,8 +175,8 @@ func DefaultConfig() (*Config, error) {
+@@ -177,8 +178,8 @@ func DefaultConfig() (*Config, error) {
  		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
  		defaultEngineConfig.SignaturePolicyPath = sigPath
  		if _, err := os.Stat(sigPath); err != nil {
@@ -113,7 +103,7 @@ index 8979a406b..a25c373f6 100644
  		}
  	}
 diff --git a/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go b/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-index c1753c845..ebb91e222 100644
+index 41204dd9a..def35441d 100644
 --- a/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
 +++ b/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
 @@ -12,6 +12,7 @@ import (
@@ -124,7 +114,7 @@ index c1753c845..ebb91e222 100644
  	"github.com/containers/image/v5/docker/reference"
  	"github.com/containers/image/v5/types"
  	"github.com/containers/storage/pkg/homedir"
-@@ -569,7 +570,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
+@@ -560,7 +561,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
  	} else if ctx != nil && ctx.RootForImplicitAbsolutePaths != "" {
  		wrapper.configPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfPath)
  	} else {
@@ -133,7 +123,7 @@ index c1753c845..ebb91e222 100644
  	}
  
  	// potentially use both system and per-user dirs if not using per-user config file
-@@ -580,7 +581,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
+@@ -571,7 +572,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
  		wrapper.configDirPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfDirPath)
  		wrapper.userConfigDirPath = userRegistriesDirPath
  	} else {
@@ -143,18 +133,18 @@ index c1753c845..ebb91e222 100644
  	}
  
 diff --git a/vendor/github.com/containers/image/v5/signature/policy_config.go b/vendor/github.com/containers/image/v5/signature/policy_config.go
-index bb91cae8c..46d09311e 100644
+index f8fdce2da..2d3f53b05 100644
 --- a/vendor/github.com/containers/image/v5/signature/policy_config.go
 +++ b/vendor/github.com/containers/image/v5/signature/policy_config.go
-@@ -20,6 +20,7 @@ import (
+@@ -21,6 +21,7 @@ import (
  	"path/filepath"
  	"regexp"
  
 +	"github.com/containers/common/pkg/config"
  	"github.com/containers/image/v5/docker/reference"
+ 	"github.com/containers/image/v5/signature/internal"
  	"github.com/containers/image/v5/transports"
- 	"github.com/containers/image/v5/types"
-@@ -74,7 +75,7 @@ func defaultPolicyPathWithHomeDir(sys *types.SystemContext, homeDir string) stri
+@@ -71,7 +72,7 @@ func defaultPolicyPathWithHomeDir(sys *types.SystemContext, homeDir string) stri
  	if sys != nil && sys.RootForImplicitAbsolutePaths != "" {
  		return filepath.Join(sys.RootForImplicitAbsolutePaths, systemDefaultPolicyPath)
  	}
