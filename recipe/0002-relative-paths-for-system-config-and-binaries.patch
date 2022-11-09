@@ -1,8 +1,8 @@
 diff --git a/vendor/github.com/containers/common/pkg/config/config.go b/vendor/github.com/containers/common/pkg/config/config.go
-index 3d90268cd..6c9d7df5e 100644
+index cde7cec53..46e4b5441 100644
 --- a/vendor/github.com/containers/common/pkg/config/config.go
 +++ b/vendor/github.com/containers/common/pkg/config/config.go
-@@ -21,6 +21,42 @@ import (
+@@ -22,6 +22,42 @@ import (
  	"github.com/sirupsen/logrus"
  )
  
@@ -45,7 +45,7 @@ index 3d90268cd..6c9d7df5e 100644
  const (
  	// _configPath is the path to the containers/containers.conf
  	// inside a given config directory.
-@@ -719,8 +755,8 @@ func systemConfigs() ([]string, error) {
+@@ -739,8 +775,8 @@ func systemConfigs() ([]string, error) {
  		}
  		return append(configs, path), nil
  	}
@@ -56,7 +56,7 @@ index 3d90268cd..6c9d7df5e 100644
  	}
  	if _, err := os.Stat(OverrideContainersConfig); err == nil {
  		configs = append(configs, OverrideContainersConfig)
-@@ -1246,7 +1282,7 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error)
+@@ -1334,7 +1370,7 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error)
  	if len(c.Engine.HelperBinariesDir) == 0 {
  		return "", fmt.Errorf("could not find %q because there are no helper binary directories configured.  %s", name, configHint)
  	}
@@ -66,10 +66,10 @@ index 3d90268cd..6c9d7df5e 100644
  
  // ImageCopyTmpDir default directory to store temporary image files during copy
 diff --git a/vendor/github.com/containers/common/pkg/config/default.go b/vendor/github.com/containers/common/pkg/config/default.go
-index 161a9c8d6..148951640 100644
+index c5fca7f0c..97408eb4b 100644
 --- a/vendor/github.com/containers/common/pkg/config/default.go
 +++ b/vendor/github.com/containers/common/pkg/config/default.go
-@@ -140,9 +140,9 @@ const (
+@@ -149,9 +149,9 @@ const (
  	DefaultPidsLimit = 2048
  	// DefaultPullPolicy pulls the image if it does not exist locally.
  	DefaultPullPolicy = "missing"
@@ -81,17 +81,17 @@ index 161a9c8d6..148951640 100644
  	// DefaultSubnet is the subnet that will be used for the default
  	// network.
  	DefaultSubnet = "10.88.0.0/16"
-@@ -168,7 +168,8 @@ func DefaultConfig() (*Config, error) {
+@@ -179,7 +179,8 @@ func DefaultConfig() (*Config, error) {
  		return nil, err
  	}
  
 -	defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
 +	defaultSigPath := FallbackToPathRelativeToExe(defaultSignaturePolicyPath)
 +	defaultEngineConfig.SignaturePolicyPath = defaultSigPath
- 	if unshare.IsRootless() {
+ 	if useUserConfigLocations() {
  		configHome, err := homedir.GetConfigHome()
  		if err != nil {
-@@ -177,8 +178,8 @@ func DefaultConfig() (*Config, error) {
+@@ -188,8 +189,8 @@ func DefaultConfig() (*Config, error) {
  		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
  		defaultEngineConfig.SignaturePolicyPath = sigPath
  		if _, err := os.Stat(sigPath); err != nil {
