@@ -1,3 +1,16 @@
+diff --git a/pkg/trust/policy.go b/pkg/trust/policy.go
+index aa14fc7e1..18a0707f6 100644
+--- a/pkg/trust/policy.go
++++ b/pkg/trust/policy.go
+@@ -54,7 +54,7 @@ type genericRepoMap map[string]json.RawMessage
+ 
+ // DefaultPolicyPath returns a path to the default policy of the system.
+ func DefaultPolicyPath(sys *types.SystemContext) string {
+-	systemDefaultPolicyPath := config.DefaultSignaturePolicyPath
++	systemDefaultPolicyPath := config.DefaultSignaturePath()
+ 	if sys != nil {
+ 		if sys.SignaturePolicyPath != "" {
+ 			return sys.SignaturePolicyPath
 diff --git a/vendor/github.com/containers/common/pkg/config/config.go b/vendor/github.com/containers/common/pkg/config/config.go
 index 5e965402c..9bea0659e 100644
 --- a/vendor/github.com/containers/common/pkg/config/config.go
@@ -80,30 +93,59 @@ index 4ce5d0320..0852e2994 100644
  
  func selinuxEnabled() bool {
 diff --git a/vendor/github.com/containers/common/pkg/config/default.go b/vendor/github.com/containers/common/pkg/config/default.go
-index e27f63064..6c4a4ac4a 100644
+index e27f63064..6447db97e 100644
 --- a/vendor/github.com/containers/common/pkg/config/default.go
 +++ b/vendor/github.com/containers/common/pkg/config/default.go
-@@ -147,7 +147,8 @@ func DefaultConfig() (*Config, error) {
+@@ -140,6 +140,27 @@ const (
+ 	DefaultVolumePluginTimeout = 5
+ )
+ 
++// DefaultSignaturePath returns the default signature policy path.
++// If an error occurs return a fallback default
++func DefaultSignaturePath() string {
++	defaultSigPath := FallbackToPathRelativeToExe(defaultSignaturePolicyPath)
++	sigPath := defaultSigPath
++	if useUserConfigLocations() {
++		configHome, err := homedir.GetConfigHome()
++		if err != nil {
++			sigPath = defaultSigPath
++		} else {
++			sigPath = filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
++			if _, err := os.Stat(sigPath); err != nil {
++				if _, err := os.Stat(defaultSigPath); err == nil {
++					sigPath = defaultSigPath
++				}
++			}
++		}
++	}
++	return sigPath
++}
++
+ // DefaultConfig defines the default values from containers.conf.
+ func DefaultConfig() (*Config, error) {
+ 	defaultEngineConfig, err := defaultConfigFromMemory()
+@@ -147,20 +168,7 @@ func DefaultConfig() (*Config, error) {
  		return nil, err
  	}
  
 -	defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
-+	defaultSigPath := FallbackToPathRelativeToExe(defaultSignaturePolicyPath)
-+	defaultEngineConfig.SignaturePolicyPath = defaultSigPath
- 	if useUserConfigLocations() {
- 		configHome, err := homedir.GetConfigHome()
- 		if err != nil {
-@@ -156,8 +157,8 @@ func DefaultConfig() (*Config, error) {
- 		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
- 		defaultEngineConfig.SignaturePolicyPath = sigPath
- 		if _, err := os.Stat(sigPath); err != nil {
+-	if useUserConfigLocations() {
+-		configHome, err := homedir.GetConfigHome()
+-		if err != nil {
+-			return nil, err
+-		}
+-		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
+-		defaultEngineConfig.SignaturePolicyPath = sigPath
+-		if _, err := os.Stat(sigPath); err != nil {
 -			if _, err := os.Stat(DefaultSignaturePolicyPath); err == nil {
 -				defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
-+			if _, err := os.Stat(defaultSigPath); err == nil {
-+				defaultEngineConfig.SignaturePolicyPath = defaultSigPath
- 			}
- 		}
- 	}
+-			}
+-		}
+-	}
++	defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePath()
+ 
+ 	cgroupNS := "host"
+ 	if cgroup2, _ := cgroupv2.Enabled(); cgroup2 {
 diff --git a/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go b/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
 index 463e77028..c734b34d9 100644
 --- a/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
