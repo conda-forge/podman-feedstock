@@ -18,6 +18,9 @@ source:
 build:
   number: 0
   skip: true  # [not linux]
+  # `$PREFIX` may end up hardcoded without replacement in some binaries
+  # https://docs.conda.io/projects/conda-build/en/latest/resources/define-metadata.html#detect-binary-files-with-prefix
+  detect_binary_files_with_prefix: False
 
 requirements:
   build:
