@@ -1,4 +1,4 @@
-{% set version = "4.3.1" %}
+{% set version = "4.4.3" %}
 
 package:
   name: podman
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://github.com/containers/podman/archive/v{{ version }}.tar.gz
-  sha256: 455c29c4ee78cd6365e5d46e20dd31a5ce4e6e1752db6774253d76bd3ca78813
+  sha256: c4770787f008923ec3181ea49c31bdb4d2b77458dbc842f43053fc96a1914ee0
   folder: src/github.com/containers/podman
   patches:
     # NOTE: This adds the memfd_create syscall which is not available on CentOS 6's kernels.
@@ -21,13 +21,9 @@ build:
 
 requirements:
   build:
-    # - {{ compiler('cgo') }} 1.17
-    # - {{ compiler('c') }}
-    # The above fails (2022-02-18):
-    # - package go-cgo_linux-64-1.17.6-hb09e268_1 requires _go_select ==2.3.0 cgo, but none of the providers can be installed
+    - {{ compiler('c') }}
+    - {{ compiler('go-cgo') }} 1.19
     # Instead specify the underlying packages since this isn't cross-platform
-    - go >=1.17
-    - go-cgo >=1.17
     - sysroot_linux-64 2.17  # [linux64]
     - go-licenses >=0.0.44
     - go-md2man
@@ -76,10 +72,10 @@ test:
         --root="${tmp}/root" --runroot="${tmp}/runroot" \
         info > "${tmp}/podman-info.txt" 2>&1
 
-      grep -F "${PREFIX}/share/containers/containers.conf" "${tmp}/podman-info.txt"
       grep -F "seccompProfilePath: ${PREFIX}/share/containers/seccomp.json" "${tmp}/podman-info.txt"
 
       # Not in output:
+      # grep -F "${PREFIX}/share/containers/containers.conf" "${tmp}/podman-info.txt"
       # grep -F "HooksDir:[${PREFIX}/share/containers/oci/hooks.d]" "${tmp}/podman-info.txt"
       # grep -F "SignaturePolicyPath:${PREFIX}/etc/containers/policy.json" "${tmp}/podman-info.txt"
 
@@ -102,3 +98,4 @@ extra:
     - mbargull
     - dhirschfeld
     - manics
+    - xhochy
