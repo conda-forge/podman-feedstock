@@ -22,7 +22,7 @@ build:
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{ compiler('go-cgo') }} 1.19
+    - {{ compiler('go-cgo') }} 1.20
     # Instead specify the underlying packages since this isn't cross-platform
     - sysroot_linux-64 2.17  # [linux64]
     - go-licenses >=0.0.44
