@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#!/usr/bin/env bash
 
 module='github.com/containers/podman'
 export GOPATH="$( pwd )"

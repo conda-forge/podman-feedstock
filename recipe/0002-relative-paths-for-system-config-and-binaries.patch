@@ -1,21 +1,46 @@
-From d3b98fd91a616f8727af90a0ce0a650883625a95 Mon Sep 17 00:00:00 2001
+From d2a902862be3eceaae30749b4d73fb93fe5dcfdb Mon Sep 17 00:00:00 2001
 From: Uwe Korn <uwelk@xhochy.com>
 Date: Sat, 13 May 2023 21:58:57 +0000
-Subject: [PATCH] relative paths for system config and binaries
+Subject: [PATCH 2/2] relative paths for system config and binaries
 
 ---
- .../containers/common/pkg/config/config.go    | 42 +++++++++++++++++--
  .../containers/common/pkg/config/default.go   |  7 ++--
+ .../containers/common/pkg/config/new.go       | 41 ++++++++++++++++++-
  .../sysregistriesv2/system_registries_v2.go   |  5 ++-
  .../image/v5/signature/policy_config.go       |  3 +-
- 4 files changed, 48 insertions(+), 9 deletions(-)
+ 4 files changed, 48 insertions(+), 8 deletions(-)
 
-diff --git a/vendor/github.com/containers/common/pkg/config/config.go b/vendor/github.com/containers/common/pkg/config/config.go
-index 5e96540..9bea065 100644
---- a/vendor/github.com/containers/common/pkg/config/config.go
-+++ b/vendor/github.com/containers/common/pkg/config/config.go
-@@ -22,6 +22,42 @@ import (
- 	"github.com/sirupsen/logrus"
+diff --git a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
+index b60c434..7428441 100644
+--- a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
++++ b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
+@@ -195,7 +195,8 @@ func defaultConfig() (*Config, error) {
+ 		return nil, err
+ 	}
+ 
+-	defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
++	defaultSigPath := FallbackToPathRelativeToExe(DefaultSignaturePolicyPath)
++	defaultEngineConfig.SignaturePolicyPath = defaultSigPath
+ 	if useUserConfigLocations() {
+ 		configHome, err := homedir.GetConfigHome()
+ 		if err != nil {
+@@ -204,8 +205,8 @@ func defaultConfig() (*Config, error) {
+ 		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
+ 		defaultEngineConfig.SignaturePolicyPath = sigPath
+ 		if _, err := os.Stat(sigPath); err != nil {
+-			if _, err := os.Stat(DefaultSignaturePolicyPath); err == nil {
+-				defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
++			if _, err := os.Stat(defaultSigPath); err == nil {
++				defaultEngineConfig.SignaturePolicyPath = defaultSigPath
+ 			}
+ 		}
+ 	}
+diff --git a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
+index 64ddf47..0293884 100644
+--- a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
++++ b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
+@@ -20,6 +20,43 @@ var (
+ 	cachedConfig      *Config
  )
  
 +// Get path to the running executable.
@@ -54,10 +79,11 @@ index 5e96540..9bea065 100644
 +	return PathRelativeToExe(path)
 +}
 +
++
  const (
- 	// _configPath is the path to the containers/containers.conf
- 	// inside a given config directory.
-@@ -762,8 +798,8 @@ func systemConfigs() ([]string, error) {
+ 	// FIXME: update code base and tests to use the two constants below.
+ 	containersConfEnv         = "CONTAINERS_CONF"
+@@ -157,8 +194,8 @@ func systemConfigs() (configs []string, finalErr error) {
  		}
  		return append(configs, path), nil
  	}
@@ -68,44 +94,10 @@ index 5e96540..9bea065 100644
  	}
  	if _, err := os.Stat(OverrideContainersConfig); err == nil {
  		configs = append(configs, OverrideContainersConfig)
-@@ -1342,7 +1378,7 @@ func (c *Config) FindHelperBinary(name string, searchPATH bool) (string, error)
- 	if len(c.Engine.HelperBinariesDir) == 0 {
- 		return "", fmt.Errorf("could not find %q because there are no helper binary directories configured.  %s", name, configHint)
- 	}
--	return "", fmt.Errorf("could not find %q in one of %v.  %s", name, c.Engine.HelperBinariesDir, configHint)
-+	return "", fmt.Errorf("could not find %q in one of %v.  %s", name, dirList, configHint)
- }
- 
- // ImageCopyTmpDir default directory to store temporary image files during copy
-diff --git a/vendor/github.com/containers/common/pkg/config/default.go b/vendor/github.com/containers/common/pkg/config/default.go
-index edc695f..74717e8 100644
---- a/vendor/github.com/containers/common/pkg/config/default.go
-+++ b/vendor/github.com/containers/common/pkg/config/default.go
-@@ -148,7 +148,8 @@ func DefaultConfig() (*Config, error) {
- 		return nil, err
- 	}
- 
--	defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
-+	defaultSigPath := FallbackToPathRelativeToExe(DefaultSignaturePolicyPath)
-+	defaultEngineConfig.SignaturePolicyPath = defaultSigPath
- 	if useUserConfigLocations() {
- 		configHome, err := homedir.GetConfigHome()
- 		if err != nil {
-@@ -157,8 +158,8 @@ func DefaultConfig() (*Config, error) {
- 		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
- 		defaultEngineConfig.SignaturePolicyPath = sigPath
- 		if _, err := os.Stat(sigPath); err != nil {
--			if _, err := os.Stat(DefaultSignaturePolicyPath); err == nil {
--				defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
-+			if _, err := os.Stat(defaultSigPath); err == nil {
-+				defaultEngineConfig.SignaturePolicyPath = defaultSigPath
- 			}
- 		}
- 	}
-diff --git a/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go b/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-index 463e770..c734b34 100644
---- a/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-+++ b/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
+diff --git a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
+index f45fd9d..5dea483 100644
+--- a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
++++ b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
 @@ -11,6 +11,7 @@ import (
  	"sync"
  
@@ -114,7 +106,7 @@ index 463e770..c734b34 100644
  	"github.com/containers/image/v5/docker/reference"
  	"github.com/containers/image/v5/types"
  	"github.com/containers/storage/pkg/homedir"
-@@ -577,7 +578,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
+@@ -578,7 +579,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
  	} else if ctx != nil && ctx.RootForImplicitAbsolutePaths != "" {
  		wrapper.configPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfPath)
  	} else {
@@ -123,19 +115,19 @@ index 463e770..c734b34 100644
  	}
  
  	// potentially use both system and per-user dirs if not using per-user config file
-@@ -588,7 +589,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
+@@ -589,7 +590,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
  		wrapper.configDirPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfDirPath)
  		wrapper.userConfigDirPath = userRegistriesDirPath
  	} else {
 -		wrapper.configDirPath = systemRegistriesConfDirPath
-+		wrapper.configDirPath = config.FallbackToPathRelativeToExe(systemRegistriesConfDirPath)
++		wrapper.configPath = config.FallbackToPathRelativeToExe(systemRegistriesConfPath)
  		wrapper.userConfigDirPath = userRegistriesDirPath
  	}
  
-diff --git a/vendor/github.com/containers/image/v5/signature/policy_config.go b/vendor/github.com/containers/image/v5/signature/policy_config.go
-index 5ca4ad7..5728883 100644
---- a/vendor/github.com/containers/image/v5/signature/policy_config.go
-+++ b/vendor/github.com/containers/image/v5/signature/policy_config.go
+diff --git a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go
+index 7eb5cab..b7f4dd1 100644
+--- a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go
++++ b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go
 @@ -20,6 +20,7 @@ import (
  	"os"
  	"path/filepath"
@@ -153,6 +145,3 @@ index 5ca4ad7..5728883 100644
  }
  
  // NewPolicyFromFile returns a policy configured in the specified file.
--- 
-2.25.1
-

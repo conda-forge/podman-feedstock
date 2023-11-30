@@ -1,4 +1,4 @@
-{% set version = "4.6.2" %}
+{% set version = "4.8.0" %}
 
 package:
   name: podman
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://github.com/containers/podman/archive/v{{ version }}.tar.gz
-  sha256: 2d8e04f0c3819c3f0ed1ca5d01da87e6d911571b96ae690448f7f75df41f2ad1
+  sha256: cd0afd1fb493b0c099fd8634525f318f35e4e84c1d7735d8426a722a4d5c8409
   folder: src/github.com/containers/podman
   patches:
     # NOTE: This adds the memfd_create syscall which is not available on CentOS 6's kernels.
@@ -22,7 +22,7 @@ build:
 requirements:
   build:
     - {{ compiler('c') }}
-    - {{ compiler('go-cgo') }} 1.19
+    - {{ compiler('go-cgo') }} 1.20
     # Instead specify the underlying packages since this isn't cross-platform
     - sysroot_linux-64 2.17  # [linux64]
     - go-licenses >=0.0.44
