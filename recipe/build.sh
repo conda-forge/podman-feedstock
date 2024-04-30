@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -exuo pipefail
+
 module='github.com/containers/podman'
 export GOPATH="$( pwd )"
 LICENSE_DIR="$( pwd )/license-files"

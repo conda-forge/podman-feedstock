@@ -47,6 +47,7 @@ requirements:
     # TODO: switch to crun?
     - runc
     - slirp4netns
+    - netavark
 
 test:
   requires:

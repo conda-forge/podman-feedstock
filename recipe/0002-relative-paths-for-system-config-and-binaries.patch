@@ -1,17 +1,17 @@
-From 8063a03d8dc67e5f7650cd6ba6f1ea1c5a08d3b8 Mon Sep 17 00:00:00 2001
+From 58466a67ec5076d3d5b956e1fba140656cd43a86 Mon Sep 17 00:00:00 2001
 From: Uwe Korn <uwelk@xhochy.com>
 Date: Sat, 13 May 2023 21:58:57 +0000
 Subject: [PATCH 2/2] relative paths for system config and binaries
 
 ---
- .../containers/common/pkg/config/default.go   |  7 ++--
+ .../containers/common/pkg/config/default.go   |  9 +++--
  .../containers/common/pkg/config/new.go       | 38 ++++++++++++++++++-
  .../sysregistriesv2/system_registries_v2.go   |  5 ++-
  .../image/v5/signature/policy_config.go       |  3 +-
- 4 files changed, 46 insertions(+), 7 deletions(-)
+ 4 files changed, 47 insertions(+), 8 deletions(-)
 
 diff --git a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
-index b08f165..3680b0c 100644
+index b08f165..6427653 100644
 --- a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
 +++ b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
 @@ -194,7 +194,8 @@ func defaultConfig() (*Config, error) {
@@ -35,6 +35,15 @@ index b08f165..3680b0c 100644
  			}
  		}
  	}
+@@ -341,7 +342,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
+ 	c.VolumePluginTimeout = DefaultVolumePluginTimeout
+ 	c.CompressionFormat = "gzip"
+ 
+-	c.HelperBinariesDir.Set(defaultHelperBinariesDir)
++	c.HelperBinariesDir.Set(append([]string{PathRelativeToExe("/usr/lib/podman")}, defaultHelperBinariesDir...))
+ 	if additionalHelperBinariesDir != "" {
+ 		// Prioritize additionalHelperBinariesDir over defaults.
+ 		c.HelperBinariesDir.Set(append([]string{additionalHelperBinariesDir}, c.HelperBinariesDir.Get()...))
 diff --git a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
 index fb59473..2a2a9d8 100644
 --- a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
