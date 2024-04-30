@@ -1,30 +1,30 @@
-From d2a902862be3eceaae30749b4d73fb93fe5dcfdb Mon Sep 17 00:00:00 2001
+From 58466a67ec5076d3d5b956e1fba140656cd43a86 Mon Sep 17 00:00:00 2001
 From: Uwe Korn <uwelk@xhochy.com>
 Date: Sat, 13 May 2023 21:58:57 +0000
 Subject: [PATCH 2/2] relative paths for system config and binaries
 
 ---
- .../containers/common/pkg/config/default.go   |  7 ++--
- .../containers/common/pkg/config/new.go       | 41 ++++++++++++++++++-
+ .../containers/common/pkg/config/default.go   |  9 +++--
+ .../containers/common/pkg/config/new.go       | 38 ++++++++++++++++++-
  .../sysregistriesv2/system_registries_v2.go   |  5 ++-
  .../image/v5/signature/policy_config.go       |  3 +-
- 4 files changed, 48 insertions(+), 8 deletions(-)
+ 4 files changed, 47 insertions(+), 8 deletions(-)
 
 diff --git a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
-index b60c434..7428441 100644
+index b08f165..6427653 100644
 --- a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
 +++ b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
-@@ -195,7 +195,8 @@ func defaultConfig() (*Config, error) {
+@@ -194,7 +194,8 @@ func defaultConfig() (*Config, error) {
  		return nil, err
  	}
  
 -	defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
 +	defaultSigPath := FallbackToPathRelativeToExe(DefaultSignaturePolicyPath)
 +	defaultEngineConfig.SignaturePolicyPath = defaultSigPath
- 	if useUserConfigLocations() {
- 		configHome, err := homedir.GetConfigHome()
- 		if err != nil {
-@@ -204,8 +205,8 @@ func defaultConfig() (*Config, error) {
+ 	// NOTE: For now we want Windows to use system locations.
+ 	// GetRootlessUID == -1 on Windows, so exclude negative range
+ 	if unshare.GetRootlessUID() > 0 {
+@@ -205,8 +206,8 @@ func defaultConfig() (*Config, error) {
  		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
  		defaultEngineConfig.SignaturePolicyPath = sigPath
  		if _, err := os.Stat(sigPath); err != nil {
@@ -35,13 +35,22 @@ index b60c434..7428441 100644
  			}
  		}
  	}
+@@ -341,7 +342,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
+ 	c.VolumePluginTimeout = DefaultVolumePluginTimeout
+ 	c.CompressionFormat = "gzip"
+ 
+-	c.HelperBinariesDir.Set(defaultHelperBinariesDir)
++	c.HelperBinariesDir.Set(append([]string{PathRelativeToExe("/usr/lib/podman")}, defaultHelperBinariesDir...))
+ 	if additionalHelperBinariesDir != "" {
+ 		// Prioritize additionalHelperBinariesDir over defaults.
+ 		c.HelperBinariesDir.Set(append([]string{additionalHelperBinariesDir}, c.HelperBinariesDir.Get()...))
 diff --git a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
-index 64ddf47..0293884 100644
+index fb59473..2a2a9d8 100644
 --- a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
 +++ b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
-@@ -20,6 +20,43 @@ var (
- 	cachedConfig      *Config
- )
+@@ -147,6 +147,42 @@ func NewConfig(userConfigPath string) (*Config, error) {
+ 	return New(&Options{additionalConfigs: []string{userConfigPath}})
+ }
  
 +// Get path to the running executable.
 +func GetExePath() string {
@@ -79,21 +88,18 @@ index 64ddf47..0293884 100644
 +	return PathRelativeToExe(path)
 +}
 +
-+
- const (
- 	// FIXME: update code base and tests to use the two constants below.
- 	containersConfEnv         = "CONTAINERS_CONF"
-@@ -157,8 +194,8 @@ func systemConfigs() (configs []string, finalErr error) {
+ // Returns the list of configuration files, if they exist in order of hierarchy.
+ // The files are read in order and each new file can/will override previous
+ // file settings.
+@@ -157,7 +193,7 @@ func systemConfigs() (configs []string, finalErr error) {
  		}
  		return append(configs, path), nil
  	}
--	if _, err := os.Stat(DefaultContainersConfig); err == nil {
--		configs = append(configs, DefaultContainersConfig)
-+	if _, err := os.Stat(PathRelativeToExe(DefaultContainersConfig)); err == nil {
-+		configs = append(configs, PathRelativeToExe(DefaultContainersConfig))
- 	}
- 	if _, err := os.Stat(OverrideContainersConfig); err == nil {
- 		configs = append(configs, OverrideContainersConfig)
+-	configs = append(configs, DefaultContainersConfig)
++	configs = append(configs, PathRelativeToExe(DefaultContainersConfig))
+ 	configs = append(configs, OverrideContainersConfig)
+ 
+ 	var err error
 diff --git a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
 index f45fd9d..5dea483 100644
 --- a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go

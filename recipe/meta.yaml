@@ -1,4 +1,4 @@
-{% set version = "4.9.3" %}
+{% set version = "5.0.2" %}
 
 package:
   name: podman
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://github.com/containers/podman/archive/v{{ version }}.tar.gz
-  sha256: 37afc5bba2738c68dc24400893b99226c658cc9a2b22309f4d7abe7225d8c437
+  sha256: 85c3f70a1c293ccf48907d8e9fe13c6c9aac67242525a539296beeef31ba11a8
   folder: src/github.com/containers/podman
   patches:
     # NOTE: This adds the memfd_create syscall which is not available on CentOS 6's kernels.
@@ -47,6 +47,7 @@ requirements:
     # TODO: switch to crun?
     - runc
     - slirp4netns
+    - netavark
 
 test:
   requires:
