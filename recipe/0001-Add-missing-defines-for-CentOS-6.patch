@@ -1,4 +1,4 @@
-From d1be26d01b873a6190efe567ccf2f00a23a1b699 Mon Sep 17 00:00:00 2001
+From 4fc2d69e1097e26ec998c8759fc8330b6e5d3b86 Mon Sep 17 00:00:00 2001
 From: "Uwe L. Korn" <uwe.korn@quantco.com>
 Date: Wed, 29 Nov 2023 20:12:49 +0000
 Subject: [PATCH 1/2] Add missing defines for CentOS 6
@@ -9,7 +9,7 @@ Subject: [PATCH 1/2] Add missing defines for CentOS 6
  2 files changed, 22 insertions(+)
 
 diff --git a/src/github.com/containers/podman/pkg/rootless/rootless_linux.c b/src/github.com/containers/podman/pkg/rootless/rootless_linux.c
-index 6e47029..00cd977 100644
+index ddb97b3..14f3153 100644
 --- a/src/github.com/containers/podman/pkg/rootless/rootless_linux.c
 +++ b/src/github.com/containers/podman/pkg/rootless/rootless_linux.c
 @@ -59,6 +59,16 @@ cleanup_dirp (DIR **p)

@@ -1,4 +1,4 @@
-From 7c32fe19b00dc74d52124517541e51a0e3f13e00 Mon Sep 17 00:00:00 2001
+From e1f832d24a3f170f373855d48ec2943dd0322e42 Mon Sep 17 00:00:00 2001
 From: Uwe Korn <uwelk@xhochy.com>
 Date: Sat, 13 May 2023 21:58:57 +0000
 Subject: [PATCH 2/2] relative paths for system config and binaries
@@ -11,7 +11,7 @@ Subject: [PATCH 2/2] relative paths for system config and binaries
  4 files changed, 47 insertions(+), 8 deletions(-)
 
 diff --git a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
-index 311b090..ccf48df 100644
+index 02ff128..bc15b7a 100644
 --- a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
 +++ b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
 @@ -197,7 +197,8 @@ func defaultConfig() (*Config, error) {
@@ -35,7 +35,7 @@ index 311b090..ccf48df 100644
  			}
  		}
  	}
-@@ -358,7 +359,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
+@@ -357,7 +358,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
  	c.CompressionFormat = "gzip"
  
  	c.HealthcheckEvents = true
@@ -101,7 +101,7 @@ index 407a685..3c2867a 100644
  	var err error
  	path, err := overrideContainersConfigPath()
 diff --git a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-index 45427a3..aec7e19 100644
+index 1b16147..0f4bada 100644
 --- a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
 +++ b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
 @@ -11,6 +11,7 @@ import (
@@ -112,7 +112,7 @@ index 45427a3..aec7e19 100644
  	"github.com/containers/image/v5/docker/reference"
  	"github.com/containers/image/v5/types"
  	"github.com/containers/storage/pkg/fileutils"
-@@ -579,7 +580,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
+@@ -584,7 +585,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
  	} else if ctx != nil && ctx.RootForImplicitAbsolutePaths != "" {
  		wrapper.configPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfPath)
  	} else {
@@ -121,7 +121,7 @@ index 45427a3..aec7e19 100644
  	}
  
  	// potentially use both system and per-user dirs if not using per-user config file
-@@ -590,7 +591,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
+@@ -595,7 +596,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
  		wrapper.configDirPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfDirPath)
  		wrapper.userConfigDirPath = userRegistriesDirPath
  	} else {
@@ -131,7 +131,7 @@ index 45427a3..aec7e19 100644
  	}
  
 diff --git a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go
-index 8e7665c..a9ba21d 100644
+index 8de705c..513bad1 100644
 --- a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go
 +++ b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go
 @@ -20,6 +20,7 @@ import (
@@ -142,12 +142,12 @@ index 8e7665c..a9ba21d 100644
  	"github.com/containers/image/v5/docker/reference"
  	"github.com/containers/image/v5/signature/internal"
  	"github.com/containers/image/v5/transports"
-@@ -72,7 +73,7 @@ func defaultPolicyPathWithHomeDir(sys *types.SystemContext, homeDir string) stri
- 	if sys != nil && sys.RootForImplicitAbsolutePaths != "" {
- 		return filepath.Join(sys.RootForImplicitAbsolutePaths, systemDefaultPolicyPath)
+@@ -81,7 +82,7 @@ func defaultPolicyPathWithHomeDir(sys *types.SystemContext, homeDir string, syst
+ 		return filepath.Join(sys.RootForImplicitAbsolutePaths, systemPolicyPath), nil
  	}
--	return systemDefaultPolicyPath
-+	return config.FallbackToPathRelativeToExe(systemDefaultPolicyPath)
+ 	if err := fileutils.Exists(systemPolicyPath); err == nil {
+-		return systemPolicyPath, nil
++		return config.FallbackToPathRelativeToExe(systemPolicyPath), nil
+ 	}
+ 	return "", fmt.Errorf("no policy.json file found at any of the following: %q, %q", userPolicyFilePath, systemPolicyPath)
  }
- 
- // NewPolicyFromFile returns a policy configured in the specified file.
