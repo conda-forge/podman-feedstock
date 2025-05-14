@@ -23,7 +23,7 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ stdlib("c") }}
-    - {{ compiler('go-cgo') }} 1.22
+    - {{ compiler('go-cgo') }} 1.23
     # Instead specify the underlying packages since this isn't cross-platform
     - go-licenses >=0.0.44
     - go-md2man
