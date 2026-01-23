@@ -1,4 +1,4 @@
-From 5dc90928de5370493615a36b62e0f4f1dd587fe7 Mon Sep 17 00:00:00 2001
+From 81ba0bf1422574e487bfd94fa09a52d212e5a6bf Mon Sep 17 00:00:00 2001
 From: Uwe Korn <uwelk@xhochy.com>
 Date: Sat, 13 May 2023 21:58:57 +0000
 Subject: [PATCH 2/2] relative paths for system config and binaries
@@ -141,14 +141,14 @@ index 1a1fccc..3e57c35 100644
  	}
  
 diff --git a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go
-index 50f4451..b24e175 100644
+index 50f4451..b7b3929 100644
 --- a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go
 +++ b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go
 @@ -20,6 +20,7 @@ import (
  	"os"
  	"path/filepath"
  
-+	"go.podman.io/containers/common/pkg/config"
++	"go.podman.io/common/pkg/config"
  	"go.podman.io/image/v5/docker/reference"
  	"go.podman.io/image/v5/signature/internal"
  	"go.podman.io/image/v5/transports"
@@ -161,3 +161,6 @@ index 50f4451..b24e175 100644
  	}
  	return "", fmt.Errorf("no policy.json file found at any of the following: %q, %q", userPolicyFilePath, systemPolicyPath)
  }
+-- 
+2.50.1 (Apple Git-155)
+
