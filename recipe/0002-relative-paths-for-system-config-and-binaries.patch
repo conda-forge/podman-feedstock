@@ -1,20 +1,20 @@
-From e1f832d24a3f170f373855d48ec2943dd0322e42 Mon Sep 17 00:00:00 2001
+From 5dc90928de5370493615a36b62e0f4f1dd587fe7 Mon Sep 17 00:00:00 2001
 From: Uwe Korn <uwelk@xhochy.com>
 Date: Sat, 13 May 2023 21:58:57 +0000
 Subject: [PATCH 2/2] relative paths for system config and binaries
 
 ---
- .../containers/common/pkg/config/default.go   |  9 +++--
- .../containers/common/pkg/config/new.go       | 38 ++++++++++++++++++-
- .../sysregistriesv2/system_registries_v2.go   |  5 ++-
+ .../go.podman.io/common/pkg/config/default.go |  9 ++--
+ .../go.podman.io/common/pkg/config/new.go     | 48 ++++++++++++++++++-
+ .../sysregistriesv2/system_registries_v2.go   |  5 +-
  .../image/v5/signature/policy_config.go       |  3 +-
- 4 files changed, 47 insertions(+), 8 deletions(-)
+ 4 files changed, 56 insertions(+), 9 deletions(-)
 
-diff --git a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
-index 02ff128..bc15b7a 100644
---- a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
-+++ b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/default.go
-@@ -197,7 +197,8 @@ func defaultConfig() (*Config, error) {
+diff --git a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/default.go b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/default.go
+index 3bf0bc1..418c371 100644
+--- a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/default.go
++++ b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/default.go
+@@ -213,7 +213,8 @@ func defaultConfig() (*Config, error) {
  		return nil, err
  	}
  
@@ -24,7 +24,7 @@ index 02ff128..bc15b7a 100644
  	// NOTE: For now we want Windows to use system locations.
  	// GetRootlessUID == -1 on Windows, so exclude negative range
  	if unshare.GetRootlessUID() > 0 {
-@@ -208,8 +209,8 @@ func defaultConfig() (*Config, error) {
+@@ -224,8 +225,8 @@ func defaultConfig() (*Config, error) {
  		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
  		defaultEngineConfig.SignaturePolicyPath = sigPath
  		if err := fileutils.Exists(sigPath); err != nil {
@@ -35,7 +35,7 @@ index 02ff128..bc15b7a 100644
  			}
  		}
  	}
-@@ -357,7 +358,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
+@@ -368,7 +369,7 @@ func defaultEngineConfig() (*EngineConfig, error) {
  	c.CompressionFormat = "gzip"
  
  	c.HealthcheckEvents = true
@@ -44,14 +44,33 @@ index 02ff128..bc15b7a 100644
  	if additionalHelperBinariesDir != "" {
  		// Prioritize additionalHelperBinariesDir over defaults.
  		c.HelperBinariesDir.Set(append([]string{additionalHelperBinariesDir}, c.HelperBinariesDir.Get()...))
-diff --git a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
-index 407a685..3c2867a 100644
---- a/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
-+++ b/src/github.com/containers/podman/vendor/github.com/containers/common/pkg/config/new.go
-@@ -148,6 +148,42 @@ func NewConfig(userConfigPath string) (*Config, error) {
- 	return New(&Options{additionalConfigs: []string{userConfigPath}})
+diff --git a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/new.go b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/new.go
+index d40ff82..48bf3d2 100644
+--- a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/new.go
++++ b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/new.go
+@@ -55,8 +55,8 @@ func defaultPaths() (*paths, error) {
+ 		return nil, err
+ 	}
+ 	return &paths{
+-		usr:  defaultContainersConfig,
+-		etc:  etcPath,
++		usr:  PathRelativeToExe(defaultContainersConfig),
++		etc:  PathRelativeToExe(etcPath),
+ 		home: homePath,
+ 		uid:  unshare.GetRootlessUID(),
+ 	}, nil
+@@ -167,6 +167,50 @@ func newLocked(options *Options, paths *paths) (*Config, error) {
+ 	return config, nil
  }
  
++// NewConfig creates a new Config. It starts with an empty config and, if
++// specified, merges the config at `userConfigPath` path.
++//
++// Deprecated: use new instead.
++func NewConfig(userConfigPath string) (*Config, error) {
++	return New(&Options{additionalConfigs: []string{userConfigPath}})
++}
++
 +// Get path to the running executable.
 +func GetExePath() string {
 +	exePath, err := os.Executable()
@@ -91,28 +110,19 @@ index 407a685..3c2867a 100644
  // Returns the list of configuration files, if they exist in order of hierarchy.
  // The files are read in order and each new file can/will override previous
  // file settings.
-@@ -159,7 +195,7 @@ func systemConfigs() (configs []string, finalErr error) {
- 		return append(configs, path), nil
- 	}
- 
--	configs = append(configs, DefaultContainersConfig)
-+	configs = append(configs, PathRelativeToExe(DefaultContainersConfig))
- 
- 	var err error
- 	path, err := overrideContainersConfigPath()
-diff --git a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-index 1b16147..0f4bada 100644
---- a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-+++ b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-@@ -11,6 +11,7 @@ import (
- 	"sync"
+diff --git a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go
+index 1a1fccc..3e57c35 100644
+--- a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go
++++ b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go
+@@ -15,6 +15,7 @@ import (
  
  	"github.com/BurntSushi/toml"
-+	"github.com/containers/common/pkg/config"
- 	"github.com/containers/image/v5/docker/reference"
- 	"github.com/containers/image/v5/types"
- 	"github.com/containers/storage/pkg/fileutils"
-@@ -584,7 +585,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
+ 	"github.com/sirupsen/logrus"
++	"go.podman.io/common/pkg/config"
+ 	"go.podman.io/image/v5/docker/reference"
+ 	"go.podman.io/image/v5/types"
+ 	"go.podman.io/storage/pkg/fileutils"
+@@ -587,7 +588,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
  	} else if ctx != nil && ctx.RootForImplicitAbsolutePaths != "" {
  		wrapper.configPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfPath)
  	} else {
@@ -121,7 +131,7 @@ index 1b16147..0f4bada 100644
  	}
  
  	// potentially use both system and per-user dirs if not using per-user config file
-@@ -595,7 +596,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
+@@ -598,7 +599,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
  		wrapper.configDirPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfDirPath)
  		wrapper.userConfigDirPath = userRegistriesDirPath
  	} else {
@@ -130,18 +140,18 @@ index 1b16147..0f4bada 100644
  		wrapper.userConfigDirPath = userRegistriesDirPath
  	}
  
-diff --git a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go
-index 8de705c..513bad1 100644
---- a/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go
-+++ b/src/github.com/containers/podman/vendor/github.com/containers/image/v5/signature/policy_config.go
+diff --git a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go
+index 50f4451..b24e175 100644
+--- a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go
++++ b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go
 @@ -20,6 +20,7 @@ import (
  	"os"
  	"path/filepath"
  
-+	"github.com/containers/common/pkg/config"
- 	"github.com/containers/image/v5/docker/reference"
- 	"github.com/containers/image/v5/signature/internal"
- 	"github.com/containers/image/v5/transports"
++	"go.podman.io/containers/common/pkg/config"
+ 	"go.podman.io/image/v5/docker/reference"
+ 	"go.podman.io/image/v5/signature/internal"
+ 	"go.podman.io/image/v5/transports"
 @@ -81,7 +82,7 @@ func defaultPolicyPathWithHomeDir(sys *types.SystemContext, homeDir string, syst
  		return filepath.Join(sys.RootForImplicitAbsolutePaths, systemPolicyPath), nil
  	}
