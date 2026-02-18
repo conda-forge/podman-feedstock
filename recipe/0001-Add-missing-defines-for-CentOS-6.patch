@@ -1,15 +1,15 @@
-From 4fc2d69e1097e26ec998c8759fc8330b6e5d3b86 Mon Sep 17 00:00:00 2001
+From e0954b25110c9bc25941958a4e963e9a619039dd Mon Sep 17 00:00:00 2001
 From: "Uwe L. Korn" <uwe.korn@quantco.com>
 Date: Wed, 29 Nov 2023 20:12:49 +0000
 Subject: [PATCH 1/2] Add missing defines for CentOS 6
 
 ---
  .../containers/podman/pkg/rootless/rootless_linux.c  | 10 ++++++++++
- .../containers/storage/pkg/unshare/unshare.c         | 12 ++++++++++++
+ .../go.podman.io/storage/pkg/unshare/unshare.c       | 12 ++++++++++++
  2 files changed, 22 insertions(+)
 
 diff --git a/src/github.com/containers/podman/pkg/rootless/rootless_linux.c b/src/github.com/containers/podman/pkg/rootless/rootless_linux.c
-index ddb97b3..14f3153 100644
+index 644c8ef..d4f4207 100644
 --- a/src/github.com/containers/podman/pkg/rootless/rootless_linux.c
 +++ b/src/github.com/containers/podman/pkg/rootless/rootless_linux.c
 @@ -59,6 +59,16 @@ cleanup_dirp (DIR **p)
@@ -29,10 +29,10 @@ index ddb97b3..14f3153 100644
  int rename_noreplace (int olddirfd, const char *oldpath, int newdirfd, const char *newpath)
  {
    int ret;
-diff --git a/src/github.com/containers/podman/vendor/github.com/containers/storage/pkg/unshare/unshare.c b/src/github.com/containers/podman/vendor/github.com/containers/storage/pkg/unshare/unshare.c
+diff --git a/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/unshare/unshare.c b/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/unshare/unshare.c
 index a280065..e261d38 100644
---- a/src/github.com/containers/podman/vendor/github.com/containers/storage/pkg/unshare/unshare.c
-+++ b/src/github.com/containers/podman/vendor/github.com/containers/storage/pkg/unshare/unshare.c
+--- a/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/unshare/unshare.c
++++ b/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/unshare/unshare.c
 @@ -31,6 +31,18 @@
  #define MFD_CLOEXEC 1U
  #endif
