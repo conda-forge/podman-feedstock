@@ -1,4 +1,4 @@
-From 8b4111a8f23481507c0e3954e2e7ad5b8273d94f Mon Sep 17 00:00:00 2001
+From 1d008960e5db631b9818b468e5e8e95bc5de2bfe Mon Sep 17 00:00:00 2001
 From: Uwe Korn <uwelk@xhochy.com>
 Date: Sat, 13 May 2023 21:58:57 +0000
 Subject: [PATCH 2/2] relative paths for system config and binaries
@@ -103,17 +103,17 @@ index d40ff82..1a596a0 100644
  // The files are read in order and each new file can/will override previous
  // file settings.
 diff --git a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-index 1a1fccc..5b5a5d5 100644
+index 1a1fccc..3e57c35 100644
 --- a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go
 +++ b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-@@ -20,6 +20,7 @@ import (
- 	"go.podman.io/storage/pkg/fileutils"
- 	"go.podman.io/storage/pkg/homedir"
- 	"go.podman.io/storage/pkg/regexp"
-+	"github.com/containers/common/pkg/config"
- )
+@@ -15,6 +15,7 @@ import (
  
- // systemRegistriesConfPath is the path to the system-wide registry
+ 	"github.com/BurntSushi/toml"
+ 	"github.com/sirupsen/logrus"
++	"go.podman.io/common/pkg/config"
+ 	"go.podman.io/image/v5/docker/reference"
+ 	"go.podman.io/image/v5/types"
+ 	"go.podman.io/storage/pkg/fileutils"
 @@ -587,7 +588,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
  	} else if ctx != nil && ctx.RootForImplicitAbsolutePaths != "" {
  		wrapper.configPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfPath)
