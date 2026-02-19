@@ -54,7 +54,7 @@ index d40ff82..1a596a0 100644
  	return &paths{
 -		usr:  defaultContainersConfig,
 -		etc:  etcPath,
-+	        usr:  PathRelativeToExe(defaultContainersConfig)
++	        usr:  PathRelativeToExe(defaultContainersConfig),
 +		etc:  PathRelativeToExe(etcPath),
  		home: homePath,
  		uid:  unshare.GetRootlessUID(),
