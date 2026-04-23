@@ -17,7 +17,7 @@ source:
 
 build:
   number: 0
-  skip: true  # [not linux]
+  skip: true  # [not linux and not osx]
 
 requirements:
   build:
@@ -30,7 +30,7 @@ requirements:
     - pkg-config
     - make
   host:
-    - btrfs-progs
+    - btrfs-progs  # [linux]
     - containers-common
     - glib
     # Header+pkgconfig files for libglib are in the glib package.
@@ -38,22 +38,22 @@ requirements:
     - gpgme
     - libassuan
     - libgpg-error
-    - libseccomp
+    - libseccomp  # [linux]
   run:
-    - conmon >=2.0.30
+    - conmon >=2.0.30  # [linux]
     - containers-common
-    - cni-plugins
+    - cni-plugins  # [linux]
     # TODO: switch to crun?
-    - runc
-    - slirp4netns
-    - netavark
+    - runc  # [linux]
+    - slirp4netns  # [linux]
+    - netavark  # [linux]
 
 test:
   requires:
     # NOTE: Some binaries from util-linux, like `nsenter`, are needed. To avoid
     #       clashes with users' system-provided base utils, let's not add
     #       util-linux to requirements/run for now.
-    - util-linux
+    - util-linux  # [linux]
 
 about:
   home: https://podman.io/
