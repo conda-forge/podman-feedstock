@@ -17,14 +17,14 @@ source:
 
 build:
   number: 1
-  skip: true  # [win]
+  skip: true                     # [win]
 
 requirements:
   build:
     - {{ compiler('c') }}        # [linux]
     - {{ stdlib("c") }}          # [linux]
     - {{ compiler('go-cgo') }}   # [linux]
-    - go                         # [osx]
+    - {{ compiler('go') }}       # [osx]
     # Instead specify the underlying packages since this isn't cross-platform
     - go-licenses >=0.0.44
     - go-md2man
@@ -40,15 +40,15 @@ requirements:
     - gpgme                      # [linux]
     - libassuan                  # [linux]
     - libgpg-error               # [linux]
-    - libseccomp  # [linux]
+    - libseccomp                 # [linux]
   run:
-    - conmon >=2.0.30  # [linux]
+    - conmon >=2.0.30            # [linux]
     - containers-common
-    - cni-plugins  # [linux]
+    - cni-plugins                # [linux]
     # TODO: switch to crun?
-    - runc  # [linux]
-    - slirp4netns  # [linux]
-    - netavark  # [linux]
+    - runc                       # [linux]
+    - slirp4netns                # [linux]
+    - netavark                   # [linux]
 
 test:
   requires:
