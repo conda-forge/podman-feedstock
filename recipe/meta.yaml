@@ -21,23 +21,25 @@ build:
 
 requirements:
   build:
-    - {{ compiler('c') }}
-    - {{ stdlib("c") }}
-    - {{ compiler('go-cgo') }}
+    - {{ compiler('c') }}        # [linux]
+    - {{ stdlib("c") }}          # [linux]
+    - {{ compiler('go-cgo') }}   # [linux]
+    - go                         # [osx]
     # Instead specify the underlying packages since this isn't cross-platform
     - go-licenses >=0.0.44
     - go-md2man
-    - pkg-config
+    - pkg-config                 # [linux]
     - make
+    - grep  # [osx]
   host:
     - btrfs-progs  # [linux]
     - containers-common
-    - glib
+    - glib                       # [linux]
     # Header+pkgconfig files for libglib are in the glib package.
-    - libglib
-    - gpgme
-    - libassuan
-    - libgpg-error
+    - libglib                    # [linux]
+    - gpgme                      # [linux]
+    - libassuan                  # [linux]
+    - libgpg-error               # [linux]
     - libseccomp  # [linux]
   run:
     - conmon >=2.0.30  # [linux]
