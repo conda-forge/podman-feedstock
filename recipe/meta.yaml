@@ -30,9 +30,9 @@ requirements:
     - go-md2man
     - pkg-config                 # [linux]
     - make
-    - grep  # [osx]
+    - grep                       # [osx]
   host:
-    - btrfs-progs  # [linux]
+    - btrfs-progs                # [linux]
     - containers-common
     - glib                       # [linux]
     # Header+pkgconfig files for libglib are in the glib package.
@@ -55,7 +55,7 @@ test:
     # NOTE: Some binaries from util-linux, like `nsenter`, are needed. To avoid
     #       clashes with users' system-provided base utils, let's not add
     #       util-linux to requirements/run for now.
-    - util-linux  # [linux]
+    - util-linux                 # [linux]
 
 about:
   home: https://podman.io/
