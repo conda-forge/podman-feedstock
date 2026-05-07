@@ -24,7 +24,3 @@ build_platform:
 test: native_and_emulated
 provider:
   linux_64: azure
-workflow_settings:
-  # toggle for storing the conda build_artifacts directory (including the
-  # built packages) as a pipeline artifact that can be downloaded
-  store_build_artifacts: true
