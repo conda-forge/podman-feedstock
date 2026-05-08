@@ -20,6 +20,9 @@ fi
 # Skip the local-daemon tests on macOS: the binary is podman-remote which
 # has no local storage driver and requires a running podman machine/service.
 if [[ "${target_platform}" == "osx-arm64" || "${target_platform}" == "osx-64" ]]; then
+    # Minimal smoke-test for the remote client binary.
+    podman --help
+    podman --version
     echo "Skipping local daemon tests on ${target_platform} (podman-remote only)"
     exit 0
 fi
