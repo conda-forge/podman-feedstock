@@ -32,7 +32,7 @@ requirements:
     - grep                       # [osx]
   host:
     - btrfs-progs                # [linux]
-    - containers-common
+    - containers-common          # [not win]
     - glib                       # [linux]
     # Header+pkgconfig files for libglib are in the glib package.
     - libglib                    # [linux]
@@ -42,7 +42,7 @@ requirements:
     - libseccomp                 # [linux]
   run:
     - conmon >=2.0.30            # [linux]
-    - containers-common
+    - containers-common          # [not win]
     - cni-plugins                # [linux]
     # TODO: switch to crun?
     - runc                       # [linux]
