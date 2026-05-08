@@ -24,3 +24,4 @@ build_platform:
 test: native_and_emulated
 provider:
   linux_64: azure
+  win_64: azure

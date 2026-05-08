@@ -17,19 +17,18 @@ source:
 
 build:
   number: 1
-  skip: true                     # [win]
 
 requirements:
   build:
     - {{ compiler('c') }}        # [linux]
     - {{ stdlib("c") }}          # [linux]
     - {{ compiler('go-cgo') }}   # [linux]
-    - {{ compiler('go') }}       # [osx]
+    - {{ compiler('go') }}       # [osx or win]
     # Instead specify the underlying packages since this isn't cross-platform
     - go-licenses >=0.0.44
-    - go-md2man
+    - go-md2man                  # [not win]
     - pkg-config                 # [linux]
-    - make
+    - make                       # [not win]
     - grep                       # [osx]
   host:
     - btrfs-progs                # [linux]
