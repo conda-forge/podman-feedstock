@@ -11,15 +11,17 @@ github:
   tooling_branch_name: main
 conda_build:
   pkg_format: '2'
+workflow_settings:
+  # toggle for storing the conda build_artifacts directory (including the
+  # built packages) as a CI artifact that can be downloaded
+  store_build_artifacts: true
 bot:
   automerge: true
 build_platform:
   linux_aarch64: linux_64
   linux_ppc64le: linux_64
+  osx_arm64: osx_64
 test: native_and_emulated
 provider:
   linux_64: azure
-workflow_settings:
-  # toggle for storing the conda build_artifacts directory (including the
-  # built packages) as a pipeline artifact that can be downloaded
-  store_build_artifacts: true
+  win_64: azure
