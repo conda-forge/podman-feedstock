@@ -13,7 +13,7 @@ jobs:
         UPLOAD_PACKAGES: 'True'
         DOCKER_IMAGE: quay.io/condaforge/linux-anvil-x86_64:alma9
         build_workspace_dir: build_artifacts
-        docker_run_args: --cap-add SYS_ADMIN
+        docker_run_args: --test
         store_build_artifacts: true
         tools_install_dir: ~/miniforge3
         SHORT_CONFIG: linux_64_
@@ -22,7 +22,7 @@ jobs:
         UPLOAD_PACKAGES: 'True'
         DOCKER_IMAGE: quay.io/condaforge/linux-anvil-x86_64:alma9
         build_workspace_dir: build_artifacts
-        docker_run_args: --cap-add SYS_ADMIN
+        docker_run_args: --test
         store_build_artifacts: true
         tools_install_dir: ~/miniforge3
         SHORT_CONFIG: linux_aarch64_
@@ -31,7 +31,7 @@ jobs:
         UPLOAD_PACKAGES: 'True'
         DOCKER_IMAGE: quay.io/condaforge/linux-anvil-x86_64:alma9
         build_workspace_dir: build_artifacts
-        docker_run_args: --cap-add SYS_ADMIN
+        docker_run_args: --test
         store_build_artifacts: true
         tools_install_dir: ~/miniforge3
         SHORT_CONFIG: linux_ppc64le_
