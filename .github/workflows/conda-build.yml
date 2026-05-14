@@ -31,7 +31,7 @@ jobs:
             DOCKER_IMAGE: quay.io/condaforge/linux-anvil-x86_64:alma9
             tools_install_dir: ~/miniforge3
             build_workspace_dir: build_artifacts
-            docker_run_args: --cap-add SYS_ADMIN
+            docker_run_args: 
           - CONFIG: linux_aarch64_
             STORE_BUILD_ARTIFACTS: True
             SHORT_CONFIG: linux_aarch64_
@@ -41,7 +41,7 @@ jobs:
             DOCKER_IMAGE: quay.io/condaforge/linux-anvil-x86_64:alma9
             tools_install_dir: ~/miniforge3
             build_workspace_dir: build_artifacts
-            docker_run_args: --cap-add SYS_ADMIN
+            docker_run_args: 
           - CONFIG: linux_ppc64le_
             STORE_BUILD_ARTIFACTS: True
             SHORT_CONFIG: linux_ppc64le_
@@ -51,7 +51,7 @@ jobs:
             DOCKER_IMAGE: quay.io/condaforge/linux-anvil-x86_64:alma9
             tools_install_dir: ~/miniforge3
             build_workspace_dir: build_artifacts
-            docker_run_args: --cap-add SYS_ADMIN
+            docker_run_args: 
           - CONFIG: osx_64_
             STORE_BUILD_ARTIFACTS: True
             SHORT_CONFIG: osx_64_
@@ -60,7 +60,7 @@ jobs:
             runs_on: ['macos-15-intel']
             tools_install_dir: ~/miniforge3
             build_workspace_dir: ~/miniforge3/conda-bld
-            docker_run_args: --cap-add SYS_ADMIN
+            docker_run_args: 
           - CONFIG: osx_arm64_
             STORE_BUILD_ARTIFACTS: True
             SHORT_CONFIG: osx_arm64_
@@ -69,7 +69,7 @@ jobs:
             runs_on: ['macos-15-intel']
             tools_install_dir: ~/miniforge3
             build_workspace_dir: ~/miniforge3/conda-bld
-            docker_run_args: --cap-add SYS_ADMIN
+            docker_run_args: 
           - CONFIG: win_64_
             STORE_BUILD_ARTIFACTS: True
             SHORT_CONFIG: win_64_
@@ -78,7 +78,7 @@ jobs:
             runs_on: ['windows-latest']
             tools_install_dir: D:\Miniforge
             build_workspace_dir: D:\\bld\\
-            docker_run_args: --cap-add SYS_ADMIN
+            docker_run_args: 
     steps:
 
     - name: Checkout code
