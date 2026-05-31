@@ -20,7 +20,7 @@ source:
     - 0002-relative-paths-for-system-config-and-binaries.patch  # [not win]
 
 build:
-  number: 1
+  number: 2
 
 requirements:
   build:
@@ -48,8 +48,8 @@ requirements:
     - conmon >=2.0.30            # [linux]
     - containers-common          # [not win]
     - cni-plugins                # [linux]
-    # TODO: switch to crun?
-    - runc                       # [linux]
+    - crun                       # [linux and (x86_64 or aarch64)]
+    - runc                       # [linux and ppc64le]
     - slirp4netns                # [linux]
     - netavark                   # [linux]
 
