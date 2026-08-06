@@ -41,13 +41,6 @@ Current build status
                 </a>
               </td>
             </tr><tr>
-              <td>osx_64</td>
-              <td>
-                <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=11145&branchName=main">
-                  <img src="https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/podman-feedstock?branchName=main&jobName=osx&configuration=osx%20osx_64_" alt="variant">
-                </a>
-              </td>
-            </tr><tr>
               <td>win_64</td>
               <td>
                 <a href="https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=11145&branchName=main">
@@ -79,31 +72,73 @@ conda config --add channels conda-forge
 conda config --set channel_priority strict
 ```
 
-Once the `conda-forge` channel has been enabled, `podman` can be installed with `conda`:
+How to use
+----------
+
+<details>
+<summary>With conda</summary>
 
 ```
 conda install podman
 ```
 
-or with `mamba`:
+</details>
+
+<details>
+<summary>With mamba</summary>
 
 ```
 mamba install podman
 ```
 
-It is possible to list all of the versions of `podman` available on your platform with `conda`:
+</details>
+
+<details>
+<summary>With pixi</summary>
+
+```
+# for adding to your local project
+pixi add podman
+# for installing globally
+pixi global install podman
+```
+
+</details>
+
+Search package versions
+-----------------------
+
+It is possible to list all of the versions of `podman` available on your platform:
+
+<details>
+<summary>With conda</summary>
 
 ```
 conda search podman --channel conda-forge
 ```
 
-or with `mamba`:
+</details>
+
+<details>
+<summary>With mamba</summary>
 
 ```
 mamba search podman --channel conda-forge
 ```
 
-Alternatively, `mamba repoquery` may provide more information:
+</details>
+
+<details>
+<summary>With pixi</summary>
+
+```
+pixi search podman --channel conda-forge
+```
+
+</details>
+
+<details>
+<summary>With mamba repoquery, which may provide more information</summary>
 
 ```
 # Search all versions available on your platform:
@@ -115,6 +150,8 @@ mamba repoquery whoneeds podman --channel conda-forge
 # List dependencies of `podman`:
 mamba repoquery depends podman --channel conda-forge
 ```
+
+</details>
 
 
 About conda-forge
@@ -186,5 +223,6 @@ Feedstock Maintainers
 * [@dhirschfeld](https://github.com/dhirschfeld/)
 * [@manics](https://github.com/manics/)
 * [@mbargull](https://github.com/mbargull/)
+* [@pb01ka](https://github.com/pb01ka/)
 * [@xhochy](https://github.com/xhochy/)
 

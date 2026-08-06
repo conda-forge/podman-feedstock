@@ -1,18 +1,18 @@
-From e0954b25110c9bc25941958a4e963e9a619039dd Mon Sep 17 00:00:00 2001
+From 47daaff9f1f5c76d545c6e7bc1551ab665b5d32f Mon Sep 17 00:00:00 2001
 From: "Uwe L. Korn" <uwe.korn@quantco.com>
 Date: Wed, 29 Nov 2023 20:12:49 +0000
 Subject: [PATCH 1/2] Add missing defines for CentOS 6
 
 ---
- .../containers/podman/pkg/rootless/rootless_linux.c  | 10 ++++++++++
- .../go.podman.io/storage/pkg/unshare/unshare.c       | 12 ++++++++++++
+ pkg/rootless/rootless_linux.c                     | 10 ++++++++++
+ vendor/go.podman.io/storage/pkg/unshare/unshare.c | 12 ++++++++++++
  2 files changed, 22 insertions(+)
 
 diff --git a/src/github.com/containers/podman/pkg/rootless/rootless_linux.c b/src/github.com/containers/podman/pkg/rootless/rootless_linux.c
-index 644c8ef..d4f4207 100644
+index 1054c32184..c924f48dc6 100644
 --- a/src/github.com/containers/podman/pkg/rootless/rootless_linux.c
 +++ b/src/github.com/containers/podman/pkg/rootless/rootless_linux.c
-@@ -59,6 +59,16 @@ cleanup_dirp (DIR **p)
+@@ -81,6 +81,16 @@ cleanup_dirp (DIR **p)
      closedir (dir);
  }
  
@@ -26,11 +26,11 @@ index 644c8ef..d4f4207 100644
 +# define setns(fd, nstype) syscall(__NR_setns, fd, nstype)
 +#endif
 +
- int rename_noreplace (int olddirfd, const char *oldpath, int newdirfd, const char *newpath)
+ int
+ rename_noreplace (int olddirfd, const char *oldpath, int newdirfd, const char *newpath)
  {
-   int ret;
 diff --git a/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/unshare/unshare.c b/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/unshare/unshare.c
-index a280065..e261d38 100644
+index a2800654f9..e261d387db 100644
 --- a/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/unshare/unshare.c
 +++ b/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/unshare/unshare.c
 @@ -31,6 +31,18 @@
