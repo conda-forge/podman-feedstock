@@ -21,19 +21,9 @@ else
   make -C "src/${module}" \
     install install.completions \
     ETCDIR="${PREFIX}/etc"
-  # podman is built with the `systemd` build tag (for healthcheck timers). On a
-  # host with a systemd journal that would also switch the default log driver
-  # and events backend to journald -- but conda-forge's conmon is built without
-  # journald support ("Include journald in compilation path to log to systemd
-  # journal"), so keep the non-systemd defaults for those two.
-  mkdir -p "${PREFIX}/etc/containers/containers.conf.d"
-  cat > "${PREFIX}/etc/containers/containers.conf.d/10-conda-forge.conf" <<EOF
-[containers]
-log_driver = "k8s-file"
-
-[engine]
-events_logger = "file"
-EOF
+  # Keep file/k8s-file defaults despite the systemd build tag, see the file.
+  install -D -m 644 "${RECIPE_DIR}/10-conda-forge.conf" \
+    "${PREFIX}/etc/containers/containers.conf.d/10-conda-forge.conf"
 fi
 
 cd "./src/${module}"

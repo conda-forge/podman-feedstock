@@ -44,10 +44,16 @@ requirements:
     - libassuan                  # [linux]
     - libgpg-error               # [linux]
     - libseccomp                 # [linux]
+    # podman links libsqlite3 (`libsqlite3` build tag, sqlite database backend);
+    # without this host dep the package silently relied on the system library.
+    - libsqlite                  # [linux]
     # Enables the `systemd` build tag (auto-detected by hack/systemd_tag.sh):
     # healthcheck timers via systemd-run and journald events/log driver.
     # All of it is runtime-gated on a running systemd (/run/systemd/system),
-    # so hosts without systemd keep the previous behaviour.
+    # so hosts without systemd keep the previous behaviour. On systemd hosts
+    # *without* a user session (e.g. `su - user`, no lingering), containers
+    # with a HEALTHCHECK then fail to start unless DISABLE_HC_SYSTEMD=true or
+    # `loginctl enable-linger` -- same as distribution podman packages.
     - libsystemd                 # [linux]
   run:
     - conmon >=2.0.30            # [linux]

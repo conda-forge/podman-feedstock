@@ -48,6 +48,12 @@ test -x "${PREFIX}/libexec/podman/rootlessport"
 grep -F "logDriver: k8s-file" "${tmp}/podman-info.txt"
 grep -F "eventLogger: file" "${tmp}/podman-info.txt"
 
+# Without a running systemd (as in this build container) every systemd code
+# path is disabled at runtime, so the defaults stay as in a non-systemd build.
+if [ ! -d /run/systemd/system ]; then
+    grep -F "cgroupManager: cgroupfs" "${tmp}/podman-info.txt"
+fi
+
 # Built with the `systemd` build tag: the journald events backend exists.
 # (Without the tag this fails with "no support for journald logging".)
 podman --events-backend=journald --storage-driver=vfs \
