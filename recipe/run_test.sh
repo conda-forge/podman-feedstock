@@ -37,3 +37,33 @@ podman --log-level=debug --storage-driver=vfs \
     info > "${tmp}/podman-info.txt" 2>&1
 
 grep -F "seccompProfilePath: ${PREFIX}/share/containers/seccomp.json" "${tmp}/podman-info.txt"
+
+# Helper binaries are searched in ${PREFIX}/{libexec/podman,lib/podman,bin}.
+grep -F "path: ${PREFIX}/lib/podman/netavark" "${tmp}/podman-info.txt"
+grep -F "path: ${PREFIX}/bin/aardvark-dns" "${tmp}/podman-info.txt"
+test -x "${PREFIX}/libexec/podman/rootlessport"
+
+# The containers.conf.d drop-in keeps the non-journald defaults (conmon from
+# conda-forge has no journald support).
+grep -F "logDriver: k8s-file" "${tmp}/podman-info.txt"
+grep -F "eventLogger: file" "${tmp}/podman-info.txt"
+
+# Without a running systemd (as in this build container) every systemd code
+# path is disabled at runtime, so the defaults stay as in a non-systemd build.
+if [ ! -d /run/systemd/system ]; then
+    grep -F "cgroupManager: cgroupfs" "${tmp}/podman-info.txt"
+fi
+
+# Built with the `systemd` build tag: the journald events backend exists.
+# (Without the tag this fails with "no support for journald logging".)
+podman --events-backend=journald --storage-driver=vfs \
+    --root="${tmp}/root" --runroot="${tmp}/runroot" \
+    info > /dev/null
+
+# The signature policy falls back to the one shipped by containers-common.
+# (Only verifiable when the host has no /etc/containers/policy.json.)
+if [ ! -e /etc/containers/policy.json ] && [ ! -e ~/.config/containers/policy.json ]; then
+    podman --log-level=debug --storage-driver=vfs \
+        --root="${tmp}/root" --runroot="${tmp}/runroot" \
+        image trust show 2>&1 | grep -E "^all +default +accept"
+fi

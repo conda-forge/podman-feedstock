@@ -11,6 +11,7 @@ jobs:
       win_64_:
         CONFIG: win_64_
         UPLOAD_PACKAGES: 'True'
+        build_platform: win-64
         build_workspace_dir: D:\\bld\\
         free_disk_space: skip
         pagefile_size: 0
@@ -34,6 +35,7 @@ jobs:
         PYTHONUNBUFFERED: 1
         UPLOAD_PACKAGES: $(UPLOAD_PACKAGES)
         UPLOAD_TEMP: $(UPLOAD_TEMP)
+        build_platform: $(build_platform)
         flow_run_id: azure_$(Build.BuildNumber).$(System.JobAttempt)
         remote_url: $(Build.Repository.Uri)
         sha: $(Build.SourceVersion)
@@ -42,15 +44,19 @@ jobs:
         STAGING_BINSTAR_TOKEN: $(STAGING_BINSTAR_TOKEN)
 
     - script: |
-        set ARTIFACT_STAGING_DIR=$(Build.ArtifactStagingDirectory
-        set BLD_ARTIFACT_PREFIX=conda_artifacts
+        set ARTIFACT_STAGING_DIR=$(Build.ArtifactStagingDirectory)
+        set BLD_ARTIFACT_PREFIX=conda_pkgs
         set CI=azure
         set CI_RUN_ID=$(build.BuildNumber).$(system.JobAttempt)
         set CONDA_BLD_PATH=$(build_workspace_dir)
         set FEEDSTOCK_NAME=$(build.Repository.Name)
+        rem strip '{org}/' from `{org}/{repo}` to get feedstock name
+        set FEEDSTOCK_NAME=%FEEDSTOCK_NAME:*/=%
         set MINIFORGE_HOME=$(tools_install_dir)
         if "%AGENT_JOBSTATUS%" == "Failed" (
+            set BLD_ARTIFACT_PREFIX=conda_pkgs_failed
             set ENV_ARTIFACT_PREFIX=conda_envs
+            set WRK_ARTIFACT_PREFIX=conda_work
         )
         call ".scripts\create_conda_build_artifacts.bat"
       displayName: Prepare conda build artifacts
@@ -62,6 +68,13 @@ jobs:
       inputs:
         targetPath: $(BLD_ARTIFACT_PATH)
         artifactName: $(BLD_ARTIFACT_NAME)
+
+    - task: PublishPipelineArtifact@1
+      displayName: Store conda work directoryartifacts
+      condition: not(eq(variables.WRK_ARTIFACT_PATH, ''))
+      inputs:
+        targetPath: $(WRK_ARTIFACT_PATH)
+        artifactName: $(WRK_ARTIFACT_NAME)
 
     - task: PublishPipelineArtifact@1
       displayName: Store conda build environment artifacts

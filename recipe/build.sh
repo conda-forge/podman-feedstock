@@ -21,6 +21,9 @@ else
   make -C "src/${module}" \
     install install.completions \
     ETCDIR="${PREFIX}/etc"
+  # Keep file/k8s-file defaults despite the systemd build tag, see the file.
+  install -D -m 644 "${RECIPE_DIR}/10-conda-forge.conf" \
+    "${PREFIX}/etc/containers/containers.conf.d/10-conda-forge.conf"
 fi
 
 cd "./src/${module}"

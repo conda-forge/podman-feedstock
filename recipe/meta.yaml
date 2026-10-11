@@ -20,7 +20,7 @@ source:
     - 0002-relative-paths-for-system-config-and-binaries.patch  # [not win]
 
 build:
-  number: 1
+  number: 2
 
 requirements:
   build:
@@ -44,14 +44,34 @@ requirements:
     - libassuan                  # [linux]
     - libgpg-error               # [linux]
     - libseccomp                 # [linux]
+    # podman links libsqlite3 (`libsqlite3` build tag, sqlite database backend);
+    # without this host dep the package silently relied on the system library.
+    - libsqlite                  # [linux]
+    # Enables the `systemd` build tag (auto-detected by hack/systemd_tag.sh):
+    # healthcheck timers via systemd-run and journald events/log driver.
+    # All of it is runtime-gated on a running systemd (/run/systemd/system),
+    # so hosts without systemd keep the previous behaviour. On systemd hosts
+    # *without* a user session (e.g. `su - user`, no lingering), containers
+    # with a HEALTHCHECK then fail to start unless DISABLE_HC_SYSTEMD=true or
+    # `loginctl enable-linger` -- same as distribution podman packages.
+    - libsystemd                 # [linux]
   run:
     - conmon >=2.0.30            # [linux]
     - containers-common          # [not win]
     - cni-plugins                # [linux]
     # TODO: switch to crun?
     - runc                       # [linux]
-    - slirp4netns                # [linux]
     - netavark                   # [linux]
+    # DNS for containers on user-defined networks (netavark hands off to it).
+    # Without it, `podman network create` works but names never resolve.
+    # NOTE: aardvark-dns and passt are currently only built for linux-64;
+    #       once their feedstocks add the other Linux platforms these
+    #       selectors should become `# [linux]`.
+    - aardvark-dns               # [linux64]
+    # Rootless networking: podman >=5 defaults to pasta and refuses to start
+    # rootless containers if it is missing ("could not find pasta").
+    - passt                      # [linux64]
+    - slirp4netns                # [linux]
 
 test:
   requires:
