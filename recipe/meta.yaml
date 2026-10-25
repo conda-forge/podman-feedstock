@@ -20,7 +20,7 @@ source:
     - 0002-relative-paths-for-system-config-and-binaries.patch  # [not win]
 
 build:
-  number: 3
+  number: 4
 
 requirements:
   build:
@@ -64,13 +64,13 @@ requirements:
     - netavark                   # [linux]
     # DNS for containers on user-defined networks (netavark hands off to it).
     # Without it, `podman network create` works but names never resolve.
-    # NOTE: aardvark-dns and passt are currently only built for linux-64;
-    #       once their feedstocks add the other Linux platforms these
-    #       selectors should become `# [linux]`.
+    # NOTE: aardvark-dns is currently only built for linux-64, and passt for
+    #       linux-64 and linux-aarch64; once their feedstocks add the other
+    #       Linux platforms these selectors should become `# [linux]`.
     - aardvark-dns               # [linux64]
     # Rootless networking: podman >=5 defaults to pasta and refuses to start
     # rootless containers if it is missing ("could not find pasta").
-    - passt                      # [linux64]
+    - passt                      # [linux64 or aarch64]
     - slirp4netns                # [linux]
 
 test:
