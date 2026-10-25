@@ -8,14 +8,17 @@ LICENSE_DIR="$( pwd )/license-files"
 
 if [[ "$target_platform" == "osx-arm64" || "$target_platform" == "osx-64" ]]; then
   make -C "src/${module}" podman-remote
-  make -C "src/${module}" podman-remote-darwin-docs
   # install.remote also tries to install podman-mac-helper which is not built;
   # install the remote binary manually and use separate targets for the rest.
+  # This has to happen before podman-remote-darwin-docs, which rebuilds
+  # bin/darwin/podman for the build machine (x86_64 for osx-arm64).
   install -d -m 755 "${PREFIX}/bin"
   install -m 755 "src/${module}/bin/darwin/podman" "${PREFIX}/bin/podman"
+  make -C "src/${module}" podman-remote-darwin-docs
   make -C "src/${module}" \
     install.man install.completions \
     ETCDIR="${PREFIX}/etc"
+  go version -m "${PREFIX}/bin/podman" | grep "GOARCH=${GOARCH}$"
 else
   make -C "src/${module}" all
   make -C "src/${module}" \
