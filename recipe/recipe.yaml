@@ -1,0 +1,99 @@
+context:
+  version: "5.8.9"
+
+package:
+  name: podman
+  version: ${{ version }}
+
+source:
+  url: https://github.com/containers/podman/archive/v${{ version }}.tar.gz
+  sha256: 16959c84bf0df1ebf15aa0e5d2b0f6bcaeb8d0852ed4d44c5c344e44831cc6e5
+  target_directory: src/github.com/containers/podman
+  patches:
+    # The Windows remote client does not use local container configuration.
+    - if: not win
+      then: 0002-relative-paths-for-system-config-and-binaries.patch
+
+build:
+  number: 0
+
+requirements:
+  build:
+    - if: linux
+      then:
+        - ${{ compiler('c') }}
+        - ${{ stdlib('c') }}
+        - ${{ compiler('go-cgo') }}
+        - pkg-config
+      else:
+        - ${{ compiler('go') }}
+    - go-licenses
+    - if: not win
+      then:
+        - go-md2man
+        - make
+    - if: osx
+      then: grep
+  host:
+    - if: not win
+      then: containers-common
+    - if: linux
+      then:
+        - btrfs-progs
+        # Header and pkg-config files for libglib are in glib.
+        - glib
+        - libglib
+        - gpgme
+        - libassuan
+        - libgpg-error
+        - libseccomp
+        - libsqlite
+        # Enables healthcheck timers and journald, gated on a running systemd.
+        # A user session is needed for healthchecks unless DISABLE_HC_SYSTEMD=true.
+        - libsystemd
+  run:
+    - if: not win
+      then: containers-common
+    - if: linux
+      then:
+        - conmon >=2.0.30
+        - cni-plugins
+        - runc
+        - netavark
+        - slirp4netns
+    # These packages are not yet available for the other Linux architectures.
+    - if: linux and x86_64
+      then:
+        - aardvark-dns
+        - passt
+
+tests:
+  - script:
+      - if: win
+        then: run_test.bat
+        else: run_test.sh
+    requirements:
+      run:
+        # Avoid adding system utilities to the runtime environment.
+        - if: linux
+          then: util-linux
+
+about:
+  homepage: https://podman.io/
+  repository: https://github.com/containers/podman
+  documentation: https://docs.podman.io/en/latest/
+  license: Apache-2.0
+  license_file:
+    - src/github.com/containers/podman/LICENSE
+    - license-files/
+  summary: 'Podman: A tool for managing OCI containers and pods.'
+  description: >
+    Podman (the POD MANager) is a tool for managing containers and images, volumes mounted into those containers, and pods made from groups of containers. Podman is based on libpod, a library for container lifecycle management that is also contained in this repository. The libpod library provides APIs for managing containers,
+    pods, container images, and volumes.
+
+extra:
+  recipe-maintainers:
+    - mbargull
+    - dhirschfeld
+    - manics
+    - xhochy

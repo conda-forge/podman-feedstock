@@ -30,9 +30,9 @@ source .scripts/logging_utils.sh
 set -e
 
 # mangle_homebrew hides zstd on GHA macos 15 runners, so use conda-forge tools
-if [[ -d ${MINIFORGE_HOME} ]]; then
-    . "${MINIFORGE_HOME}/etc/profile.d/conda.sh"
-    conda activate
+if [[ -d ~/.pixi/bin ]]; then
+    export PATH="~/.pixi/bin:$PATH"
+    eval "$(pixi shell-hook --environment build)"
 fi
 
 # Check that the conda-build directory exists
@@ -62,6 +62,9 @@ if [[ ${#ARTIFACT_UNIQUE_ID} -gt 80 ]]; then
     ARTIFACT_UNIQUE_ID="${CI_RUN_ID}_${CONFIG_SHORT}"
 fi
 echo "ARTIFACT_UNIQUE_ID: $ARTIFACT_UNIQUE_ID"
+
+# Set a descriptive ID for the archive(s), specialized for this particular job run
+ARCHIVE_UNIQUE_ID="${CI_RUN_ID}_${CONFIG}"
 
 pushd "${CONDA_BLD_PATH}"
 
@@ -119,10 +122,8 @@ EXCLUDE_FROM_WORK=(
 # Make the build artifact archive
 if [[ ! -z ${BLD_ARTIFACT_PREFIX} && -n ${ARTIFACT_PATHS} ]]; then
     echo "Creating build artifact archive ..."
-    # Note: because of https://github.com/actions/upload-artifact/issues/785,
-    # *_ARTIFACT_NAME should be the filename of *_ARTIFACT_PATH
-    export BLD_ARTIFACT_NAME="${FEEDSTOCK_NAME}_${BLD_ARTIFACT_PREFIX}_${ARTIFACT_UNIQUE_ID}.tar.zst"
-    export BLD_ARTIFACT_PATH="${ARTIFACT_STAGING_DIR}/${BLD_ARTIFACT_NAME}"
+    export BLD_ARTIFACT_NAME="${BLD_ARTIFACT_PREFIX}_${ARTIFACT_UNIQUE_ID}"
+    export BLD_ARTIFACT_PATH="${ARTIFACT_STAGING_DIR}/${FEEDSTOCK_NAME}_${BLD_ARTIFACT_PREFIX}_${ARCHIVE_UNIQUE_ID}.tar.zst"
 
     # All our CI services have either GNU tar or bsdtar, and zstd.
     # Keep the command compatible with both!
@@ -131,7 +132,7 @@ if [[ ! -z ${BLD_ARTIFACT_PREFIX} && -n ${ARTIFACT_PATHS} ]]; then
     then
         # If tar failed but produced a (partial?) file, upload it as "broken".
         mv -v "${BLD_ARTIFACT_PATH}" "${BLD_ARTIFACT_PATH/%.tar.zst/-broken&}"
-        BLD_ARTIFACT_NAME=${BLD_ARTIFACT_NAME/%.tar.zst/-broken&}
+        BLD_ARTIFACT_NAME+=-broken
         BLD_ARTIFACT_PATH=${BLD_ARTIFACT_PATH/%.tar.zst/-broken&}
     fi
 
@@ -157,8 +158,8 @@ echo
 # Make the workdir artifact archive
 if [[ ! -z ${WRK_ARTIFACT_PREFIX} ]]; then
     echo "Creating work directory archive ..."
-    export WRK_ARTIFACT_NAME="${FEEDSTOCK_NAME}_${WRK_ARTIFACT_PREFIX}_${ARTIFACT_UNIQUE_ID}.tar.zst"
-    export WRK_ARTIFACT_PATH="${ARTIFACT_STAGING_DIR}/${WRK_ARTIFACT_NAME}"
+    export WRK_ARTIFACT_NAME="${WRK_ARTIFACT_PREFIX}_${ARTIFACT_UNIQUE_ID}"
+    export WRK_ARTIFACT_PATH="${ARTIFACT_STAGING_DIR}/${FEEDSTOCK_NAME}_${WRK_ARTIFACT_PREFIX}_${ARCHIVE_UNIQUE_ID}.tar.zst"
 
     # All our CI services have either GNU tar or bsdtar, and zstd.
     # Keep the command compatible with both!
@@ -168,7 +169,7 @@ if [[ ! -z ${WRK_ARTIFACT_PREFIX} ]]; then
     then
         # If tar failed but produced a (partial?) file, upload it as "broken".
         mv -v "${WRK_ARTIFACT_PATH}" "${WRK_ARTIFACT_PATH/%.tar.zst/-broken&}"
-        WRK_ARTIFACT_NAME=${WRK_ARTIFACT_NAME/%.tar.zst/-broken&}
+        WRK_ARTIFACT_NAME+=-broken
         WRK_ARTIFACT_PATH=${WRK_ARTIFACT_PATH/%.tar.zst/-broken&}
     fi
 
@@ -194,15 +195,15 @@ echo
 # Make the environments artifact archive
 if [[ ! -z ${ENV_ARTIFACT_PREFIX} && -n ${ENVIRONMENT_PATHS[@]} ]]; then
     echo "Creating build environment artifact archive ..."
-    export ENV_ARTIFACT_NAME="${FEEDSTOCK_NAME}_${ENV_ARTIFACT_PREFIX}_${ARTIFACT_UNIQUE_ID}.tar.zst"
-    export ENV_ARTIFACT_PATH="${ARTIFACT_STAGING_DIR}/${ENV_ARTIFACT_NAME}"
+    export ENV_ARTIFACT_NAME="${ENV_ARTIFACT_PREFIX}_${ARTIFACT_UNIQUE_ID}"
+    export ENV_ARTIFACT_PATH="${ARTIFACT_STAGING_DIR}/${FEEDSTOCK_NAME}_${ENV_ARTIFACT_PREFIX}_${ARCHIVE_UNIQUE_ID}.tar.zst"
 
     if ! tar -c -f "${ENV_ARTIFACT_PATH}" "${ZSTD}" "${ENVIRONMENT_PATHS[@]}" &&
         [[ -s ${ENV_ARTIFACT_PATH} ]]
     then
         # If tar failed but produced a (partial?) file, upload it as "broken".
         mv -v "${ENV_ARTIFACT_PATH}" "${ENV_ARTIFACT_PATH/%.tar.zst/-broken&}"
-        ENV_ARTIFACT_NAME=${ENV_ARTIFACT_NAME/%.tar.zst/-broken&}
+        ENV_ARTIFACT_NAME+=-broken
         ENV_ARTIFACT_PATH=${ENV_ARTIFACT_PATH/%.tar.zst/-broken&}
     fi
 
