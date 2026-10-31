@@ -1,5 +1,5 @@
 context:
-  version: "6.1.4"
+  version: "5.8.9"
 
 package:
   name: podman
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/containers/podman/archive/v${{ version }}.tar.gz
-  sha256: 200fd9b4b6d820cae24fc99d8e290ec945512365cf3cda8283b3905c0c284ea8
+  sha256: 16959c84bf0df1ebf15aa0e5d2b0f6bcaeb8d0852ed4d44c5c344e44831cc6e5
   target_directory: src/github.com/containers/podman
   patches:
     # The Windows remote client does not use local container configuration.
