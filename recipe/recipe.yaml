@@ -27,7 +27,7 @@ requirements:
         - pkg-config
       else:
         - ${{ compiler('go') }}
-    - go-licenses >=0.0.44
+    - go-licenses
     - if: not win
       then:
         - go-md2man
