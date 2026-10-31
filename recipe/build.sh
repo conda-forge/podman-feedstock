@@ -6,6 +6,10 @@ module='github.com/containers/podman'
 export GOPATH="$( pwd )"
 LICENSE_DIR="$( pwd )/license-files"
 
+if [[ "${CONDA_BUILD_CROSS_COMPILATION:-0}" != "1" ]]; then
+  (cd "src/${module}" && go test ./vendor/go.podman.io/storage/pkg/configfile)
+fi
+
 if [[ "$target_platform" == "osx-arm64" || "$target_platform" == "osx-64" ]]; then
   make -C "src/${module}" podman-remote
   # install.remote also tries to install podman-mac-helper which is not built;
