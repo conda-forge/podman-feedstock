@@ -4,17 +4,17 @@ build_platform:
   linux_aarch64: linux_64
   linux_ppc64le: linux_64
 conda_build_tool: rattler-build
-conda_install_tool: pixi
 conda_forge_output_validation: true
+conda_install_tool: pixi
+docker:
+  run_args: --cap-add SYS_ADMIN
 github:
   branch_name: main
   tooling_branch_name: main
 provider:
   linux_64: azure
-  win_64: azure
   osx_arm64: default
+  win_64: azure
 test: native_and_emulated
 workflow_settings:
   store_build_artifacts: true
-docker:
-  run_args: --cap-add SYS_ADMIN
