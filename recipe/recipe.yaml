@@ -15,7 +15,7 @@ source:
       then: 0002-relative-paths-for-system-config-and-binaries.patch
 
 build:
-  number: 0
+  number: 1
 
 requirements:
   build:
