@@ -1,5 +1,5 @@
 context:
-  version: "5.8.9"
+  version: "6.2.0"
 
 package:
   name: podman
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://github.com/containers/podman/archive/v${{ version }}.tar.gz
-  sha256: 16959c84bf0df1ebf15aa0e5d2b0f6bcaeb8d0852ed4d44c5c344e44831cc6e5
+  sha256: cb182273c5c5e3ea079f8f88a9a30a574d247f80e0b9dd9c02df1d2e6f6f3705
   target_directory: src/github.com/containers/podman
   patches:
     # The Windows remote client does not use local container configuration.
@@ -15,7 +15,7 @@ source:
       then: 0002-relative-paths-for-system-config-and-binaries.patch
 
 build:
-  number: 1
+  number: 0
 
 requirements:
   build:
