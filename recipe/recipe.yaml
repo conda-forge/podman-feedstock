@@ -16,6 +16,10 @@ source:
 
 build:
   number: 0
+  # Podman 6 dropped support for Intel Macs; upstream removed the code and
+  # building for darwin/amd64 fails.
+  skip:
+    - osx and x86_64
 
 requirements:
   build:
