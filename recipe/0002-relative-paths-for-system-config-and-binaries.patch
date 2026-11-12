@@ -1,89 +1,61 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From a7185fef8a4a6bd7526b75292ef1aec5c4751b31 Mon Sep 17 00:00:00 2001
 From: Uwe Korn <uwelk@xhochy.com>
-Date: Sat, 13 May 2023 21:58:57 +0000
-Subject: [PATCH 2/2] relative paths for system config and binaries
+Date: Thu, 12 Nov 2026 10:55:37 +0000
+Subject: [PATCH] relative paths for system config and binaries
 
+Conda environments are self-contained: the containers config files and the
+helper binaries are installed into the environment prefix, not into /etc,
+/usr/libexec or /usr/lib.  Derive those default paths from the location of
+the running executable (PREFIX/bin/podman) instead of hard-coding the
+system-wide locations.  The helper binary directories can use the existing
+$BINDIR mechanism.
 ---
- .../containers/podman/pkg/trust/policy.go     |  2 +-
- .../go.podman.io/common/pkg/config/default.go | 15 +++++--
- .../go.podman.io/common/pkg/config/new.go     | 40 ++++++++++++++++++-
- .../sysregistriesv2/system_registries_v2.go   |  5 ++-
- .../image/v5/signature/policy_config.go       |  2 +
- 5 files changed, 55 insertions(+), 9 deletions(-)
+ .../common/pkg/config/config_darwin.go        |  3 ++
+ .../common/pkg/config/config_linux.go         |  6 ++++
+ .../storage/pkg/configfile/parse.go           | 30 ++++++++++++++++++-
+ .../storage/pkg/configfile/path.go            |  2 +-
+ 4 files changed, 39 insertions(+), 2 deletions(-)
 
-diff --git a/src/github.com/containers/podman/pkg/trust/policy.go b/src/github.com/containers/podman/pkg/trust/policy.go
-index 64040de..016d3b8 100644
---- a/src/github.com/containers/podman/pkg/trust/policy.go
-+++ b/src/github.com/containers/podman/pkg/trust/policy.go
-@@ -74,7 +74,7 @@ func DefaultPolicyPath(sys *types.SystemContext) string {
- 	if sys != nil && sys.RootForImplicitAbsolutePaths != "" {
- 		return filepath.Join(sys.RootForImplicitAbsolutePaths, systemDefaultPolicyPath)
- 	}
--	return systemDefaultPolicyPath
-+	return config.FallbackToPathRelativeToExe(systemDefaultPolicyPath)
- }
+diff --git a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/config_darwin.go b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/config_darwin.go
+index a544f5f..15f3707 100644
+--- a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/config_darwin.go
++++ b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/config_darwin.go
+@@ -3,6 +3,9 @@ package config
+ var defaultHelperBinariesDir = []string{
+ 	// Relative to the binary directory
+ 	"$BINDIR/../libexec/podman",
++	// Conda installs the helper binaries into the environment prefix.
++	"$BINDIR/../lib/podman",
++	"$BINDIR",
+ 	// Homebrew install paths
+ 	"/usr/local/opt/podman/libexec/podman",
+ 	"/opt/homebrew/opt/podman/libexec/podman",
+diff --git a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/config_linux.go b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/config_linux.go
+index e0b4672..f6912df 100644
+--- a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/config_linux.go
++++ b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/config_linux.go
+@@ -5,6 +5,12 @@ import (
+ )
  
- // gpgIDReader returns GPG key IDs of keys stored at the provided path.
-diff --git a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/default.go b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/default.go
-index 3bf0bc1..c4de4e4 100644
---- a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/default.go
-+++ b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/default.go
-@@ -213,7 +213,8 @@ func defaultConfig() (*Config, error) {
- 		return nil, err
- 	}
+ var defaultHelperBinariesDir = []string{
++	// Relative to the binary directory. Conda installs the helper binaries
++	// into PREFIX/libexec/podman (rootlessport, quadlet), PREFIX/lib/podman
++	// (netavark) and PREFIX/bin (aardvark-dns).
++	"$BINDIR/../libexec/podman",
++	"$BINDIR/../lib/podman",
++	"$BINDIR",
+ 	"/usr/local/libexec/podman",
+ 	"/usr/local/lib/podman",
+ 	"/usr/libexec/podman",
+diff --git a/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/configfile/parse.go b/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/configfile/parse.go
+index 9a9ea71..e26f269 100644
+--- a/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/configfile/parse.go
++++ b/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/configfile/parse.go
+@@ -19,12 +19,40 @@ import (
  
--	defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
-+	defaultSigPath := FallbackToPathRelativeToExe(DefaultSignaturePolicyPath)
-+	defaultEngineConfig.SignaturePolicyPath = defaultSigPath
- 	// NOTE: For now we want Windows to use system locations.
- 	// GetRootlessUID == -1 on Windows, so exclude negative range
- 	if unshare.GetRootlessUID() > 0 {
-@@ -224,8 +225,8 @@ func defaultConfig() (*Config, error) {
- 		sigPath := filepath.Join(configHome, DefaultRootlessSignaturePolicyPath)
- 		defaultEngineConfig.SignaturePolicyPath = sigPath
- 		if err := fileutils.Exists(sigPath); err != nil {
--			if err := fileutils.Exists(DefaultSignaturePolicyPath); err == nil {
--				defaultEngineConfig.SignaturePolicyPath = DefaultSignaturePolicyPath
-+			if err := fileutils.Exists(defaultSigPath); err == nil {
-+				defaultEngineConfig.SignaturePolicyPath = defaultSigPath
- 			}
- 		}
- 	}
-@@ -368,7 +369,13 @@ func defaultEngineConfig() (*EngineConfig, error) {
- 	c.CompressionFormat = "gzip"
+ const _configPathName = "containers"
  
- 	c.HealthcheckEvents = true
--	c.HelperBinariesDir.Set(defaultHelperBinariesDir)
-+	// Conda: helpers are spread over ${PREFIX}/libexec/podman (rootlessport,
-+	// quadlet), ${PREFIX}/lib/podman (netavark) and ${PREFIX}/bin (aardvark-dns).
-+	c.HelperBinariesDir.Set(append([]string{
-+		PathRelativeToExe("/usr/libexec/podman"),
-+		PathRelativeToExe("/usr/lib/podman"),
-+		PathRelativeToExe("/usr/bin"),
-+	}, defaultHelperBinariesDir...))
- 	if additionalHelperBinariesDir != "" {
- 		// Prioritize additionalHelperBinariesDir over defaults.
- 		c.HelperBinariesDir.Set(append([]string{additionalHelperBinariesDir}, c.HelperBinariesDir.Get()...))
-diff --git a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/new.go b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/new.go
-index d40ff82..edd6b0f 100644
---- a/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/new.go
-+++ b/src/github.com/containers/podman/vendor/go.podman.io/common/pkg/config/new.go
-@@ -55,8 +55,8 @@ func defaultPaths() (*paths, error) {
- 		return nil, err
- 	}
- 	return &paths{
--		usr:  defaultContainersConfig,
--		etc:  etcPath,
-+		usr:  PathRelativeToExe(defaultContainersConfig),
-+		etc:  PathRelativeToExe(etcPath),
- 		home: homePath,
- 		uid:  unshare.GetRootlessUID(),
- 	}, nil
-@@ -167,6 +167,42 @@ func newLocked(options *Options, paths *paths) (*Config, error) {
- 	return config, nil
- }
- 
-+// Get path to the running executable.
++// GetExePath returns the path to the running executable.
 +func GetExePath() string {
 +	exePath, err := os.Executable()
 +	if err == nil {
@@ -96,79 +68,39 @@ index d40ff82..edd6b0f 100644
 +	panic(err)
 +}
 +
-+const conda = true;
-+// For Conda environments we transform default configuration paths like so:
-+// (This assumes the executable always resides at PREFIX/bin/executable!)
-+//   /etc/path -> PREFIX/bin/../etc/path -> PREFIX/etc/path
-+//   /usr/share/path -> PREFIX/bin/../share/path -> PREFIX/share/path
++// PathRelativeToExe turns an absolute default configuration path into a path
++// relative to the Conda environment prefix, which is inferred from the location
++// of the running executable. This assumes the executable resides at
++// PREFIX/bin/executable:
++//
++//	/etc/path       -> PREFIX/bin/../etc/path   -> PREFIX/etc/path
++//	/usr/share/path -> PREFIX/bin/../share/path -> PREFIX/share/path
 +func PathRelativeToExe(path string) string {
-+	if !conda {
++	if path == "" {
 +		return path
 +	}
 +	relativePath := strings.TrimPrefix(path, "/usr")
 +	return filepath.Join(filepath.Dir(filepath.Dir(GetExePath())), relativePath)
 +}
 +
-+func FallbackToPathRelativeToExe(path string) string {
-+	if !conda {
-+		return path
-+	}
-+	if _, err := os.Stat(path); err == nil {
-+		return path
-+	}
-+	return PathRelativeToExe(path)
-+}
-+
- // Returns the list of configuration files, if they exist in order of hierarchy.
- // The files are read in order and each new file can/will override previous
- // file settings.
-diff --git a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-index 1a1fccc..d393a00 100644
---- a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-+++ b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/pkg/sysregistriesv2/system_registries_v2.go
-@@ -15,6 +15,7 @@ import (
+ var (
+ 	// systemConfigPath is the location for the default config files shipped by the distro/vendor.
+ 	//
+ 	// This can be overridden at build time with the following go linker flag:
+ 	// -ldflags '-X go.podman.io/storage/pkg/configfile.systemConfigPath=$your_path'
+-	systemConfigPath = builtinSystemConfigPath
++	systemConfigPath = PathRelativeToExe(builtinSystemConfigPath)
  
- 	"github.com/BurntSushi/toml"
- 	"github.com/sirupsen/logrus"
-+	"go.podman.io/common/pkg/config"
- 	"go.podman.io/image/v5/docker/reference"
- 	"go.podman.io/image/v5/types"
- 	"go.podman.io/storage/pkg/fileutils"
-@@ -587,7 +588,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
- 	} else if ctx != nil && ctx.RootForImplicitAbsolutePaths != "" {
- 		wrapper.configPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfPath)
- 	} else {
--		wrapper.configPath = systemRegistriesConfPath
-+		wrapper.configPath = config.FallbackToPathRelativeToExe(systemRegistriesConfPath)
- 	}
+ 	// adminOverrideConfigPath is the location for admin local override config files.
+ 	//
+diff --git a/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/configfile/path.go b/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/configfile/path.go
+index d9443dd..e33b53b 100644
+--- a/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/configfile/path.go
++++ b/src/github.com/containers/podman/vendor/go.podman.io/storage/pkg/configfile/path.go
+@@ -11,5 +11,5 @@ const (
+ )
  
- 	// potentially use both system and per-user dirs if not using per-user config file
-@@ -598,7 +599,7 @@ func newConfigWrapperWithHomeDir(ctx *types.SystemContext, homeDir string) confi
- 		wrapper.configDirPath = filepath.Join(ctx.RootForImplicitAbsolutePaths, systemRegistriesConfDirPath)
- 		wrapper.userConfigDirPath = userRegistriesDirPath
- 	} else {
--		wrapper.configDirPath = systemRegistriesConfDirPath
-+		wrapper.configDirPath = config.FallbackToPathRelativeToExe(systemRegistriesConfDirPath)
- 		wrapper.userConfigDirPath = userRegistriesDirPath
- 	}
- 
-diff --git a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go
-index 50f4451..0b95fbc 100644
---- a/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go
-+++ b/src/github.com/containers/podman/vendor/go.podman.io/image/v5/signature/policy_config.go
-@@ -20,6 +20,7 @@ import (
- 	"os"
- 	"path/filepath"
- 
-+	"go.podman.io/common/pkg/config"
- 	"go.podman.io/image/v5/docker/reference"
- 	"go.podman.io/image/v5/signature/internal"
- 	"go.podman.io/image/v5/transports"
-@@ -80,6 +81,7 @@ func defaultPolicyPathWithHomeDir(sys *types.SystemContext, homeDir string, syst
- 	if sys != nil && sys.RootForImplicitAbsolutePaths != "" {
- 		return filepath.Join(sys.RootForImplicitAbsolutePaths, systemPolicyPath), nil
- 	}
-+	systemPolicyPath = config.FallbackToPathRelativeToExe(systemPolicyPath)
- 	if err := fileutils.Exists(systemPolicyPath); err == nil {
- 		return systemPolicyPath, nil
- 	}
+ func getAdminOverrideConfigPath() string {
+-	return builtinAdminOverrideConfigPath
++	return PathRelativeToExe(builtinAdminOverrideConfigPath)
+ }
