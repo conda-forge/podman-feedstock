@@ -17,7 +17,7 @@ docker_image:
 glib:
 - '2'
 gpgme:
-- '2.2'
+- '2.3'
 libsqlite:
 - '3'
 libsystemd:
